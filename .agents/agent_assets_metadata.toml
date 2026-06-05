@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "fsn0W82CdUfw7k-OTuLBV"
+uri = "file://birthday-invite-site.tar.gz"
+type = "unspecified"
+title = "Código do Site de Aniversário do Bento"

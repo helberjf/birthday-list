@@ -1,0 +1,56 @@
+{
+  "tipo": "convite_aniversario_infantil",
+  "formato": {
+    "orientacao": "retrato",
+    "proporcao": "9:16",
+    "resolucao_sugerida": "1080x1920"
+  },
+  "tema": {
+    "nome": "Minecraft",
+    "estilo_visual": "pixel art 3D estilo voxel, blocos cúbicos, mundo aberto",
+    "paleta_de_cores": {
+      "primaria": "#4CAF50 (verde grama)",
+      "secundaria": "#5D4037 (marrom terra)",
+      "destaque": "#FFC107 (amarelo das tochas)",
+      "fundo": "#87CEEB (azul céu)"
+    },
+    "elementos_decorativos": [
+      "personagem principal segurando espada de diamante",
+      "monstro verde explosivo",
+      "lobo/cachorro de blocos",
+      "bloco de TNT",
+      "tochas acesas",
+      "picareta",
+      "baú aberto",
+      "blocos de grama e terra empilhados",
+      "céu com nuvens em blocos"
+    ],
+    "estilo_da_fonte_titulo": "negrito com contorno grosso, aparência de placa de madeira/bloco"
+  },
+  "foto": {
+    "presente": true,
+    "formato": "circular",
+    "posicao": "centro-superior",
+    "borda": "anel branco/claro"
+  },
+  "conteudo": {
+    "chamada_topo": "VOCÊ ESTÁ CONVIDADO!",
+    "nome_aniversariante": "BENTO",
+    "idade": "5 anos",
+    "data": "15/04/2026",
+    "horario": "18:00 às 22:00",
+    "local": {
+      "rotulo": "Local:",
+      "endereco": "Rua Luz Interior, 120",
+      "bairro_cidade": "Estrela Sul - Serelepe"
+    },
+    "mensagem": "Venha se divertir, jogar, dar risada e fazer parte dessa missão especial!",
+    "botao_acao": "CONFIRMAR PRESENÇA"
+  },
+  "icones": {
+    "data": "calendário",
+    "horario": "relógio",
+    "local": "pin de mapa",
+    "mensagem": "controle de videogame"
+  }
+}

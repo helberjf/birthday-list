@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: 'Chewy', system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, sans-serif;
+
+  /* Minecraft palette */
+  --color-background: hsl(40 35% 92%);       /* sandy parchment */
+  --color-foreground: hsl(130 60% 12%);       /* deep minecraft dark green */
+
+  --color-primary: hsl(130 55% 28%);          /* minecraft dark green */
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(122 45% 42%);        /* grass green */
+  --color-secondary-foreground: hsl(0 0% 100%);
+
+  --color-accent: hsl(42 95% 52%);            /* minecraft gold */
+  --color-accent-foreground: hsl(130 60% 12%);
+
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-muted: hsl(40 25% 84%);
+  --color-muted-foreground: hsl(130 20% 40%);
+
+  --color-card: hsl(42 50% 97%);
+  --color-card-foreground: hsl(130 60% 12%);
+  --color-border: hsl(40 25% 78%);
+  --color-input: hsl(40 25% 88%);
+  --color-ring: hsl(122 45% 42%);
+}
+
+:root {
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 31px,
+        rgba(0,0,0,0.03) 31px,
+        rgba(0,0,0,0.03) 32px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 31px,
+        rgba(0,0,0,0.03) 31px,
+        rgba(0,0,0,0.03) 32px
+      );
+  }
+
+  h1,h2,h3 {
+    @apply font-display tracking-wide;
+  }
+}
+
+/* Minecraft pixel border animation */
+@keyframes borderGlow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(74,222,128,0.4), inset 0 0 8px rgba(74,222,128,0.1); }
+  50%       { box-shadow: 0 0 18px 5px rgba(74,222,128,0.7), inset 0 0 12px rgba(74,222,128,0.2); }
+}
+.glow-border { animation: borderGlow 2.5s ease-in-out infinite; }
+
+/* Pixel-style block button */
+@layer utilities {
+  .btn-mc {
+    @apply relative font-display tracking-wider transition-all duration-150 active:scale-95 select-none;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+    box-shadow:
+      inset 0 -4px 0 0 rgba(0,0,0,0.3),
+      0 4px 0 0 rgba(0,0,0,0.25),
+      0 6px 12px rgba(0,0,0,0.2);
+  }
+  .btn-mc:active {
+    box-shadow:
+      inset 0 2px 0 0 rgba(0,0,0,0.3),
+      0 1px 0 0 rgba(0,0,0,0.25);
+    transform: translateY(3px) scale(0.98);
+  }
+
+  /* pixel-style badge */
+  .mc-badge {
+    @apply inline-flex items-center gap-1 font-bold text-xs px-2 py-0.5 rounded border;
+    image-rendering: pixelated;
+  }
+}

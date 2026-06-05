@@ -1,0 +1,22 @@
+packages:
+  "framer-motion": "For playful bouncy animations and festive transitions"
+  "canvas-confetti": "To trigger confetti bursts when a user RSVPs"
+  "@types/canvas-confetti": "Types for canvas-confetti"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "Zod integration for forms"
+  "date-fns": "For formatting dates nicely"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes safely"
+
+images:
+  - path: "artifacts/birthday-invite/public/images/hero-bg.png"
+    description: "A vibrant, festive children's party background. Sunny sky blue top fading into lush grass green bottom. Decorated with colorful balloons, floating confetti, and soft fluffy clouds. Playful watercolor style, warm and joyful."
+    aspect_ratio: "16:9"
+  - path: "artifacts/birthday-invite/public/images/card-texture.png"
+    description: "Soft cream watercolor paper texture with subtle playful confetti sprinkled sparsely around the edges. High quality, seamless aesthetic."
+    aspect_ratio: "3:4"
+
+notes:
+  - Using generated React Query hooks from @workspace/api-client-react
+  - Admin auth uses simple localStorage token passed in Authorization header
+  - Using standard Tailwind v4 CSS variables

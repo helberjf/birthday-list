@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Convite de Aniversário"
+version = "1.0.0"
+id = "artifacts/birthday-invite"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19819
+
+[services.development]
+run = "pnpm --filter @workspace/birthday-invite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/birthday-invite", "run", "build" ]
+publicDir = "artifacts/birthday-invite/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19819"
+BASE_PATH = "/"

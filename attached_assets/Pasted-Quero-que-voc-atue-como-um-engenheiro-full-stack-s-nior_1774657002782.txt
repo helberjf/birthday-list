@@ -1,0 +1,641 @@
+Quero que você atue como um engenheiro full stack sênior, com foco em arquitetura limpa, código de produção, UX moderna e organização profissional de projeto.
+
+Sua tarefa é gerar um projeto REAL, quase pronto para uso, para um site de convite de aniversário infantil com confirmação de presença, área pública e área administrativa.
+
+IMPORTANTE:
+- Não resuma demais
+- Não use pseudocódigo
+- Não omita arquivos importantes
+- Não entregue apenas exemplos
+- Gere código real e completo
+- Sempre escreva o caminho do arquivo antes do conteúdo
+- Se a resposta ficar longa, continue automaticamente do ponto em que parou
+- Nunca pare no meio sem continuar
+- Quero o projeto o mais pronto possível
+
+==================================================
+1. OBJETIVO DO PROJETO
+==================================================
+
+Quero criar um site de convite de aniversário infantil onde:
+
+- a página principal funcione como um convite online bonito e moderno
+- os convidados possam confirmar presença
+- o sistema permita cadastrar nome na lista
+- exista listagem pública paginada
+- exista CRUD completo
+- exista uma área admin protegida para gerenciar os convidados
+- o backend seja em Node.js
+- o frontend seja em React
+- o banco seja Firebase Cloud Firestore
+- o frontend NÃO pode acessar o Firebase diretamente
+- somente o backend pode acessar o Firebase usando Firebase Admin SDK
+
+==================================================
+2. STACK OBRIGATÓRIA
+==================================================
+
+Frontend:
+- React
+- Vite
+- Tailwind CSS
+- React Router DOM
+- Axios
+- React Hook Form
+- Zod
+- clsx
+- lucide-react
+
+Backend:
+- Node.js
+- Express
+- Firebase Admin SDK
+- CORS
+- Helmet
+- Morgan
+- Dotenv
+- express-rate-limit
+- cookie-parser
+- jsonwebtoken
+- Zod
+
+Linguagem:
+- JavaScript puro
+- NÃO usar TypeScript
+
+==================================================
+3. RESTRIÇÕES IMPORTANTES
+==================================================
+
+- O frontend NÃO pode usar Firebase SDK
+- O frontend só pode conversar com a API Node/Express
+- O backend deve usar Firebase Admin SDK
+- NÃO usar Next.js
+- NÃO usar NestJS
+- NÃO usar Prisma
+- NÃO usar Supabase
+- NÃO usar Firebase Functions como backend principal
+- NÃO usar TypeScript
+- NÃO usar bibliotecas pagas
+- NÃO usar componentes pagos de UI
+- NÃO simplificar a solução de forma rasa
+- Não criar um projeto bagunçado ou superficial
+
+==================================================
+4. CONTEXTO VISUAL
+==================================================
+
+O design deve ser inspirado visualmente em um convite infantil com clima de aventura em mundo de blocos, natureza, céu azul, grama verde, dourado e tons vibrantes, mas SEM copiar personagens, logos ou elementos protegidos.
+
+Quero uma identidade visual original, mas inspirada nessa energia:
+- céu azul vibrante
+- grama verde
+- verde esmeralda
+- verde limão
+- dourado/amarelo
+- bege/creme de papel/cartaz
+- detalhes escuros para contraste
+- clima alegre, infantil, limpo e premium
+
+Paleta base sugerida:
+- sky blue: #74B9FF
+- light sky: #A8D8FF
+- grass green: #4CAF50
+- emerald: #2E7D32
+- lime green: #9CCC65
+- gold: #F6C453
+- cream: #F7E9C9
+- dark green: #173D2A
+- deep dark: #0F172A
+
+Quero uma landing page muito bonita, com:
+- hero section forte
+- tipografia marcante
+- cards elegantes
+- sombras suaves
+- gradientes bonitos
+- glow leve em botões e bordas
+- layout excelente no mobile
+- aparência moderna e premium
+- sem visual genérico
+
+==================================================
+5. FUNCIONALIDADES PRINCIPAIS
+==================================================
+
+Página pública:
+- hero com nome do aniversariante
+- idade: 5 anos
+- data do evento
+- horário
+- local
+- texto de convite
+- botão de confirmar presença
+- formulário de confirmação
+- lista pública paginada de convidados
+
+Formulário de confirmação:
+- nome do responsável
+- nome da criança
+- telefone ou WhatsApp opcional
+- quantidade de acompanhantes
+- observações opcionais
+- status:
+  - confirmado
+  - talvez
+  - não vai
+
+CRUD completo:
+- CREATE: criar convidado
+- READ: listar convidados
+- READ ONE: buscar convidado por id
+- UPDATE: editar convidado
+- DELETE: excluir convidado
+
+Lista pública:
+- cards modernos
+- paginação
+- ordenação por mais recentes
+- loading
+- empty state
+- error state
+- total de registros
+- total de páginas
+
+Área admin:
+- login simples com senha em variável de ambiente
+- autenticação por JWT
+- JWT salvo em cookie httpOnly
+- logout
+- listagem completa
+- filtro por status
+- busca por nome
+- editar convidado
+- excluir convidado
+- painel com estatísticas básicas
+
+==================================================
+6. REGRAS DE NEGÓCIO
+==================================================
+
+Regras de cadastro:
+- parentName é obrigatório
+- childName é obrigatório
+- guestsCount deve ser número inteiro >= 0
+- status é obrigatório
+- phone é opcional
+- notes é opcional
+- createdAt e updatedAt devem ser preenchidos no backend
+
+Regras públicas:
+- telefone deve ser mascarado na listagem pública
+- listagem pública pode exibir:
+  - nome do responsável
+  - nome da criança
+  - quantidade de acompanhantes
+  - status
+  - data de criação formatada
+- não exibir dado sensível desnecessário
+
+Regras anti-spam:
+- rate limit no POST público
+- prevenção simples de duplicidade
+- considerar duplicidade baseada em parentName + childName + phone em curto intervalo
+- mensagens amigáveis em caso de duplicidade
+
+Regras admin:
+- apenas admin autenticado pode editar ou excluir
+- apenas admin autenticado pode ver estatísticas
+- middleware de autenticação obrigatório nas rotas privadas
+
+==================================================
+7. MODELAGEM DE DADOS
+==================================================
+
+Coleção do Firestore:
+- guests
+
+Cada documento deve conter:
+- id
+- parentName
+- childName
+- phone
+- guestsCount
+- status
+- notes
+- createdAt
+- updatedAt
+
+Campos extras úteis:
+- normalizedParentName
+- normalizedChildName
+- createdByIpHash opcional
+- publicDisplayName opcional
+
+Padrões:
+- createdAt e updatedAt em formato consistente
+- backend decide o formato
+- manter compatibilidade simples com frontend
+
+==================================================
+8. API BACKEND
+==================================================
+
+Crie exatamente essas rotas:
+
+Públicas:
+- POST /api/guests
+- GET /api/guests?page=1&limit=6&status=&search=
+- GET /api/guests/:id
+
+Admin:
+- POST /api/admin/login
+- POST /api/admin/logout
+- GET /api/admin/me
+- GET /api/admin/stats
+- PUT /api/guests/:id
+- DELETE /api/guests/:id
+
+Formato da listagem:
+retornar JSON assim:
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "page": 1,
+    "limit": 6,
+    "totalItems": 0,
+    "totalPages": 0
+  }
+}
+
+Formato de erro:
+{
+  "success": false,
+  "message": "Mensagem amigável",
+  "errors": []
+}
+
+==================================================
+9. ESTRUTURA DO PROJETO
+==================================================
+
+Quero uma estrutura em duas pastas principais:
+
+/client
+/server
+
+Estrutura esperada:
+
+client/
+  src/
+    api/
+    assets/
+    components/
+    components/ui/
+    hooks/
+    layouts/
+    lib/
+    pages/
+    styles/
+    utils/
+    App.jsx
+    main.jsx
+
+server/
+  src/
+    config/
+    controllers/
+    middlewares/
+    routes/
+    services/
+    utils/
+    validators/
+    app.js
+    server.js
+
+Também gere:
+- README.md
+- .env.example do client
+- .env.example do server
+- package.json de cada lado
+- configuração do Tailwind
+- configuração do Vite
+- arquivo de estilos globais
+- scripts de dev e build
+
+==================================================
+10. DETALHES DO BACKEND
+==================================================
+
+Quero backend com organização profissional e responsabilidades separadas:
+
+config/
+- firebase.js
+- env.js
+
+controllers/
+- guestController.js
+- adminController.js
+
+services/
+- guestService.js
+- adminService.js
+
+validators/
+- guestSchemas.js
+- adminSchemas.js
+
+middlewares/
+- errorHandler.js
+- notFound.js
+- authMiddleware.js
+- rateLimiters.js
+
+routes/
+- guestRoutes.js
+- adminRoutes.js
+
+utils/
+- apiResponse.js
+- appError.js
+- mask.js
+- normalize.js
+- token.js
+- hash.js se necessário
+
+Quero:
+- validação com Zod
+- middleware global de erro
+- rota 404
+- JWT com expiração razoável
+- cookie seguro configurável por ambiente
+- tratamento correto de FIREBASE_PRIVATE_KEY com quebra de linha
+- código limpo
+- sem acoplamento excessivo
+- controllers finos
+- services com regra de negócio
+
+==================================================
+11. DETALHES DO FRONTEND
+==================================================
+
+Quero um frontend com aparência moderna e forte, bem dividido, com boa experiência no desktop e mobile.
+
+Páginas:
+- HomePage
+- AdminLoginPage
+- AdminDashboardPage
+- NotFoundPage
+
+Layouts:
+- PublicLayout
+- AdminLayout
+
+Componentes:
+- HeroSection
+- EventInfoSection
+- RSVPForm
+- GuestList
+- GuestCard
+- Pagination
+- SectionTitle
+- EmptyState
+- ErrorState
+- LoadingSkeleton
+- StatusBadge
+- Toast
+- AdminLoginForm
+- AdminStatsCards
+- AdminGuestFilters
+- AdminGuestList
+- AdminGuestCard
+- EditGuestModal
+- DeleteConfirmModal
+
+Quero:
+- React Hook Form + Zod no formulário
+- Axios centralizado em client/src/api/http.js
+- hooks úteis para paginação e fetch
+- componentes reaproveitáveis
+- feedback visual bom
+- toasts ou alerts elegantes
+- skeleton loading
+- filtros funcionando
+- modais bonitos
+- UX muito bem cuidada
+
+==================================================
+12. EFEITOS VISUAIS OBRIGATÓRIOS
+==================================================
+
+Quero um efeito visual premium nos cards da lista pública e, se fizer sentido, também no admin.
+
+Cada card deve ter:
+- cantos arredondados
+- fundo bonito
+- sombra suave
+- borda animada com luz correndo pela borda
+- glow verde/azulado inspirado na paleta do convite
+
+Essa borda animada deve ser feita com uma solução profissional em CSS/Tailwind, por exemplo:
+- pseudo-elementos
+- conic-gradient
+- CSS mask
+- keyframes customizados
+- animação suave e elegante
+
+IMPORTANTE:
+- não quero efeito brega
+- não quero efeito pesado
+- quero algo moderno e limpo
+- a borda animada não pode atrapalhar a leitura
+- quero a implementação completa
+
+Também quero:
+- botão principal com visual premium
+- hero com fundo gradiente e formas inspiradas em blocos
+- badges modernos de status
+- glassmorphism leve apenas se ficar bonito
+- uso equilibrado de blur, glow e sombra
+
+==================================================
+13. ACESSIBILIDADE E UX
+==================================================
+
+Quero que você aplique boas práticas:
+- contraste aceitável
+- labels claros no formulário
+- foco visível
+- botões acessíveis
+- loading state compreensível
+- mensagens de erro boas
+- empty state elegante
+- responsividade real
+- evitar poluição visual
+- evitar animações exageradas
+- transições suaves
+- boa leitura no celular
+
+==================================================
+14. PAGINAÇÃO E LISTAGEM
+==================================================
+
+Na listagem pública:
+- paginação numerada
+- botão anterior e próximo
+- destacar página atual
+- manter scroll suave ao trocar de página
+- exibir contagem total
+
+Na área admin:
+- também quero paginação
+- filtro por status
+- busca por texto
+- atualização da lista após editar/excluir
+- UX consistente
+
+==================================================
+15. SEGURANÇA BÁSICA
+==================================================
+
+Quero aplicar o mínimo profissional:
+- Helmet
+- CORS configurável
+- rate limit na rota pública de criação
+- cookies httpOnly para JWT
+- validação no backend
+- sanitização básica/normalização
+- admin password em variável de ambiente
+- não expor credenciais no frontend
+- não expor Firebase no client
+- mascarar telefone na parte pública
+
+==================================================
+16. DETALHES DE IMPLEMENTAÇÃO QUE DEVEM EXISTIR
+==================================================
+
+Quero que o projeto já venha com:
+
+- tema de cores centralizado
+- constantes reutilizáveis
+- helpers de formatação
+- helper de máscara de telefone
+- helper para formatar data
+- helper para normalizar strings
+- componente de badge para status
+- componente de paginação reutilizável
+- modal de edição funcional
+- modal de confirmação de exclusão
+- loading skeleton bonito
+- toasts
+- tratamento de erro da API
+- interceptors básicos do Axios se necessário
+- estrutura pronta para manutenção
+
+==================================================
+17. CONTEÚDO DA PÁGINA
+==================================================
+
+Use conteúdo de exemplo coerente com aniversário infantil.
+
+Exemplo de informações:
+- nome do aniversariante: Bento
+- idade: 5 anos
+- data: 15/04/2026
+- horário: 18:00 às 22:00
+- local: Rua Luz Interior, 120, Estrela Sul - Serelepe
+
+Crie textos bonitos e infantis para:
+- hero
+- chamada do convite
+- seção de confirmação
+- empty state
+- mensagens de sucesso
+
+Mas mantenha tudo fácil de editar depois.
+
+==================================================
+18. DEPLOY
+==================================================
+
+Pense no projeto já com deploy em mente.
+
+Considere:
+- frontend podendo ir para Vercel
+- backend podendo ir para Render ou Railway
+- backend lendo variáveis de ambiente
+- frontend lendo VITE_API_URL
+
+Quero o README explicando:
+- como rodar localmente
+- como configurar Firebase
+- como preencher o .env
+- como subir frontend
+- como subir backend
+
+==================================================
+19. O QUE EU QUERO NA SUA RESPOSTA
+==================================================
+
+Quero a resposta nesta ordem exata:
+
+1. visão geral curta da arquitetura
+2. árvore completa de pastas
+3. dependências do frontend
+4. dependências do backend
+5. comandos para criar a base do projeto
+6. todos os arquivos do backend completos
+7. todos os arquivos do frontend completos
+8. .env.example do backend
+9. .env.example do frontend
+10. README.md completo
+11. resumo final explicando como tudo funciona
+
+==================================================
+20. FORMATO OBRIGATÓRIO DOS ARQUIVOS
+==================================================
+
+Antes de cada arquivo, escreva o caminho assim:
+
+// server/src/routes/guestRoutes.js
+<conteúdo completo>
+
+// client/src/components/GuestCard.jsx
+<conteúdo completo>
+
+Não use frases como:
+- “restante omitido”
+- “continua depois”
+- “adicione sua lógica aqui”
+- “exemplo básico”
+- “esqueleto inicial”
+
+Quero o arquivo completo.
+
+==================================================
+21. QUALIDADE DO CÓDIGO
+==================================================
+
+Escreva o código como alguém experiente escreveria:
+- nomes bons
+- separação boa
+- lógica clara
+- pouca repetição
+- componentes reutilizáveis
+- boa legibilidade
+- sem complexidade desnecessária
+- sem arquitetura exagerada
+- profissional e pragmático
+
+==================================================
+22. CONTINUAÇÃO AUTOMÁTICA
+==================================================
+
+Se a resposta atingir o limite, continue automaticamente do ponto exato onde parou, sem repetir o que já foi enviado e sem resumir.
+
+Comece agora pela:
+1. visão geral da arquitetura
+2. árvore de pastas
+3. dependências
+4. backend completo

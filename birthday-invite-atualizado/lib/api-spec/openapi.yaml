@@ -1,0 +1,907 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Birthday invite RSVP API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: guests
+    description: Guest management
+  - name: admin
+    description: Admin operations
+  - name: photos
+    description: Photo gallery
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /event-config:
+    get:
+      operationId: getEventConfig
+      tags: [guests]
+      summary: Get event configuration (public)
+      responses:
+        "200":
+          description: Event configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventConfig"
+    put:
+      operationId: updateEventConfig
+      tags: [admin]
+      summary: Update event configuration (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEventConfigBody"
+      responses:
+        "200":
+          description: Updated event configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventConfig"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stats:
+    get:
+      operationId: getPublicStats
+      tags: [guests]
+      summary: Public event statistics
+      responses:
+        "200":
+          description: Public stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicStats"
+
+  /guests:
+    get:
+      operationId: listGuests
+      tags: [guests]
+      summary: List guests (public)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 6
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of guests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestListResponse"
+    post:
+      operationId: createGuest
+      tags: [guests]
+      summary: Confirm presence (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGuestBody"
+      responses:
+        "201":
+          description: Guest created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /guests/{id}:
+    get:
+      operationId: getGuest
+      tags: [guests]
+      summary: Get a guest by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Guest found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateGuest
+      tags: [guests]
+      summary: Update a guest (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGuestBody"
+      responses:
+        "200":
+          description: Guest updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteGuest
+      tags: [guests]
+      summary: Delete a guest (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/whatsapp/status:
+    get:
+      operationId: getWhatsAppStatus
+      tags: [admin]
+      summary: Get WhatsApp API configuration status
+      responses:
+        "200":
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhatsAppStatus"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/send-whatsapp:
+    post:
+      operationId: sendWhatsApp
+      tags: [admin]
+      summary: Send WhatsApp messages to confirmed guests via Meta Cloud API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendWhatsAppBody"
+      responses:
+        "200":
+          description: Send results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendWhatsAppResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: WhatsApp not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResponse"
+        "401":
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Admin logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get event statistics (admin)
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/confirmed-guests:
+    get:
+      operationId: listConfirmedGuests
+      tags: [admin]
+      summary: List confirmed guests with phone (for mass reminder)
+      responses:
+        "200":
+          description: Confirmed guests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guest"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/guest-audit:
+    get:
+      operationId: listGuestAudit
+      tags: [admin]
+      summary: List guest audit log
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: guestId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit log
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestAuditListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /photos:
+    get:
+      operationId: listPhotos
+      tags: [photos]
+      summary: List gallery photos (public)
+      responses:
+        "200":
+          description: Photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
+
+  /admin/photos:
+    post:
+      operationId: createPhoto
+      tags: [photos]
+      summary: Add a photo to the gallery (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePhotoBody"
+      responses:
+        "201":
+          description: Photo created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/photos/{id}:
+    patch:
+      operationId: updatePhoto
+      tags: [photos]
+      summary: Update a photo (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePhotoBody"
+      responses:
+        "200":
+          description: Photo updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePhoto
+      tags: [photos]
+      summary: Delete a photo (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Guest:
+      type: object
+      properties:
+        id:
+          type: integer
+        parentName:
+          type: string
+        childName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        adultsCount:
+          type: integer
+        childrenCount:
+          type: integer
+        status:
+          type: string
+          enum: [confirmed, maybe, declined]
+        notes:
+          type: ["string", "null"]
+        adminNotes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - parentName
+        - adultsCount
+        - childrenCount
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateGuestBody:
+      type: object
+      properties:
+        parentName:
+          type: string
+          minLength: 2
+        childName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        adultsCount:
+          type: integer
+          minimum: 1
+        childrenCount:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum: [confirmed, maybe, declined]
+        notes:
+          type: ["string", "null"]
+      required:
+        - parentName
+        - adultsCount
+        - childrenCount
+        - status
+
+    UpdateGuestBody:
+      type: object
+      properties:
+        parentName:
+          type: string
+          minLength: 2
+        childName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        adultsCount:
+          type: integer
+          minimum: 1
+        childrenCount:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum: [confirmed, maybe, declined]
+        notes:
+          type: ["string", "null"]
+        adminNotes:
+          type: ["string", "null"]
+
+    GuestListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Guest"
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - items
+        - page
+        - limit
+        - totalItems
+        - totalPages
+
+    Photo:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        caption:
+          type: ["string", "null"]
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - url
+        - displayOrder
+        - createdAt
+
+    CreatePhotoBody:
+      type: object
+      properties:
+        url:
+          type: string
+          minLength: 1
+        caption:
+          type: ["string", "null"]
+        displayOrder:
+          type: integer
+      required:
+        - url
+
+    UpdatePhotoBody:
+      type: object
+      properties:
+        caption:
+          type: ["string", "null"]
+        displayOrder:
+          type: integer
+
+    GuestAudit:
+      type: object
+      properties:
+        id:
+          type: integer
+        guestId:
+          type: ["integer", "null"]
+        guestName:
+          type: string
+        action:
+          type: string
+        previousData:
+          nullable: true
+        newData:
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - guestName
+        - action
+        - createdAt
+
+    GuestAuditListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuestAudit"
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - items
+        - totalItems
+        - totalPages
+        - page
+        - limit
+
+    AdminLoginBody:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        message:
+          type: string
+      required:
+        - token
+        - message
+
+    AdminStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        confirmed:
+          type: integer
+        maybe:
+          type: integer
+        declined:
+          type: integer
+        totalAdults:
+          type: integer
+        totalChildren:
+          type: integer
+      required:
+        - total
+        - confirmed
+        - maybe
+        - declined
+        - totalAdults
+        - totalChildren
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    EventConfig:
+      type: object
+      properties:
+        id:
+          type: integer
+        childName:
+          type: string
+        age:
+          type: string
+        dateLabel:
+          type: string
+        dateFull:
+          type: string
+        timeLabel:
+          type: string
+        location:
+          type: string
+        neighborhood:
+          type: string
+        tagline:
+          type: string
+        inviteImageUrl:
+          type: string
+          nullable: true
+        heroBgFrom:
+          type: string
+        heroBgVia:
+          type: string
+        heroBgTo:
+          type: string
+        musicUrl:
+          type: string
+          nullable: true
+        galleryEnabled:
+          type: boolean
+        galleryTitle:
+          type: string
+        theme:
+          type: string
+        spotifyPlaylistUrl:
+          type: ["string", "null"]
+        mapsUrl:
+          type: ["string", "null"]
+        whatsappReminderEnabled:
+          type: boolean
+        whatsappReminderDaysBefore:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - childName
+        - age
+        - dateLabel
+        - dateFull
+        - timeLabel
+        - location
+        - neighborhood
+        - tagline
+        - heroBgFrom
+        - heroBgVia
+        - heroBgTo
+        - galleryEnabled
+        - galleryTitle
+        - theme
+        - updatedAt
+
+    UpdateEventConfigBody:
+      type: object
+      properties:
+        childName:
+          type: string
+          minLength: 1
+        age:
+          type: string
+          minLength: 1
+        dateLabel:
+          type: string
+          minLength: 1
+        dateFull:
+          type: string
+          minLength: 1
+        timeLabel:
+          type: string
+          minLength: 1
+        location:
+          type: string
+          minLength: 1
+        neighborhood:
+          type: string
+          minLength: 1
+        tagline:
+          type: string
+          minLength: 1
+        inviteImageUrl:
+          type: string
+          nullable: true
+        heroBgFrom:
+          type: string
+        heroBgVia:
+          type: string
+        heroBgTo:
+          type: string
+        musicUrl:
+          type: string
+          nullable: true
+        galleryEnabled:
+          type: boolean
+        galleryTitle:
+          type: string
+        theme:
+          type: string
+        spotifyPlaylistUrl:
+          type: ["string", "null"]
+        mapsUrl:
+          type: ["string", "null"]
+        whatsappReminderEnabled:
+          type: boolean
+        whatsappReminderDaysBefore:
+          type: string
+
+    SendWhatsAppBody:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+        guestIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - message
+
+    SendWhatsAppResponse:
+      type: object
+      properties:
+        sent:
+          type: integer
+        failed:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - sent
+        - failed
+        - errors
+
+    WhatsAppStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        phoneId:
+          type: ["string", "null"]
+      required:
+        - configured
+        - phoneId
+
+    PublicStats:
+      type: object
+      properties:
+        totalFamilies:
+          type: integer
+        totalPeople:
+          type: integer
+        totalAdults:
+          type: integer
+        totalChildren:
+          type: integer
+      required:
+        - totalFamilies
+        - totalPeople
+        - totalAdults
+        - totalChildren
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
