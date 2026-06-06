@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import jwt from "jsonwebtoken";
 import { db, guestsTable, guestAuditTable, eventConfigTable } from "@workspace/db";
 import { sendConfirmationEmail } from "../lib/email";
 import { eq, ilike, count, or, sum, sql, and, isNotNull } from "drizzle-orm";
@@ -11,6 +12,30 @@ import {
   DeleteGuestParams,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/auth";
+
+function isAdminRequest(req: import("express").Request): boolean {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return false;
+  const secret = process.env["JWT_SECRET"];
+  if (!secret) return false;
+  try {
+    const payload = jwt.verify(header.slice(7), secret) as { role: string };
+    return payload.role === "admin";
+  } catch {
+    return false;
+  }
+}
+
+function toPublicGuest(g: typeof guestsTable.$inferSelect) {
+  return {
+    id: g.id,
+    parentName: g.parentName,
+    childName: g.childName,
+    adultsCount: g.adultsCount,
+    childrenCount: g.childrenCount,
+    status: g.status,
+  };
+}
 
 const router: IRouter = Router();
 
@@ -72,7 +97,8 @@ router.get("/guests", async (req, res): Promise<void> => {
   const totalItems = totalResult[0]?.count ?? 0;
   const totalPages = Math.ceil(totalItems / limit);
 
-  res.json({ items, page, limit, totalItems, totalPages });
+  const responseItems = isAdminRequest(req) ? items : items.map(toPublicGuest);
+  res.json({ items: responseItems, page, limit, totalItems, totalPages });
 });
 
 router.get("/stats", async (_req, res): Promise<void> => {
@@ -192,7 +218,7 @@ router.post("/guests", async (req, res): Promise<void> => {
   res.status(201).json(guest);
 });
 
-router.get("/guests/:id", async (req, res): Promise<void> => {
+router.get("/guests/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = GetGuestParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

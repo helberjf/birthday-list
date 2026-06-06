@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import { db, guestsTable } from "@workspace/db";
 import { eq, count, sum } from "drizzle-orm";
 import { AdminLoginBody } from "@workspace/api-zod";
@@ -7,7 +8,15 @@ import { requireAdmin } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.post("/admin/login", async (req, res): Promise<void> => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas tentativas. Tente novamente em 15 minutos." },
+});
+
+router.post("/admin/login", loginLimiter, async (req, res): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Dados inválidos" });
@@ -15,7 +24,7 @@ router.post("/admin/login", async (req, res): Promise<void> => {
   }
 
   const adminPassword = process.env["ADMIN_PASSWORD"];
-  const jwtSecret = process.env["JWT_SECRET"] ?? "birthday-invite-secret";
+  const jwtSecret = process.env["JWT_SECRET"]!;
 
   if (!adminPassword || parsed.data.password !== adminPassword) {
     res.status(401).json({ error: "Senha incorreta" });

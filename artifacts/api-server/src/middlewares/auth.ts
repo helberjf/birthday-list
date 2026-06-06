@@ -13,7 +13,7 @@ export function requireAdmin(
   }
 
   const token = authHeader.slice(7);
-  const jwtSecret = process.env["JWT_SECRET"] ?? "birthday-invite-secret";
+  const jwtSecret = process.env["JWT_SECRET"]!;
 
   try {
     const payload = jwt.verify(token, jwtSecret) as { role: string };

@@ -29,7 +29,18 @@ if (!process.env.VERCEL) {
     }),
   );
 }
-app.use(cors());
+const allowedOrigins = process.env["ALLOWED_ORIGINS"]
+  ?.split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(
+  cors(
+    allowedOrigins?.length
+      ? { origin: allowedOrigins, credentials: true }
+      : undefined,
+  ),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
