@@ -2,6 +2,14 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { startScheduler } from "./scheduler";
 
+if (!process.env["JWT_SECRET"]) {
+  throw new Error("JWT_SECRET environment variable is required but was not provided.");
+}
+
+if (!process.env["ADMIN_PASSWORD"]) {
+  throw new Error("ADMIN_PASSWORD environment variable is required but was not provided.");
+}
+
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
