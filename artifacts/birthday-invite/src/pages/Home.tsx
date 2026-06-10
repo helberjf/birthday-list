@@ -16,7 +16,7 @@ import {
 
 import {
   useCreateGuest, useListGuests, useGetPublicStats,
-  useGetEventConfig, useAdminLogin, useListPhotos,
+  useGetEventConfig, useAdminLogin, useListPhotos, useListThemes,
   getListGuestsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { getThemeBySlug, getThemeCatalog, getThemeCssVars, type ThemeView } from "@/lib/themes";
 
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 
@@ -152,22 +153,25 @@ function getTimeLeft(target: Date) {
 /* ══════════════════════════════════════════════════════ */
 export default function Home() {
   const { data: eventConfig } = useGetEventConfig();
+  const { data: themes } = useListThemes();
   const EVENT = { ...DEFAULT_EVENT, ...eventConfig };
-  const theme = getTheme(EVENT.theme);
+  const themeCatalog = getThemeCatalog(themes);
+  const theme = getThemeBySlug(themeCatalog, EVENT.theme);
   const [qrOpen, setQrOpen] = useState(false);
   const siteUrl = window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, "");
 
   useEffect(() => {
     const root = document.documentElement;
-    Object.entries(theme.css).forEach(([k, v]) => root.style.setProperty(k, v));
-    return () => Object.keys(theme.css).forEach(k => root.style.removeProperty(k));
-  }, [EVENT.theme]);
+    const cssVars = getThemeCssVars(theme);
+    Object.entries(cssVars).forEach(([k, v]) => root.style.setProperty(k, v));
+    return () => Object.keys(cssVars).forEach(k => root.style.removeProperty(k));
+  }, [theme.cssAccent, theme.cssPrimary, theme.cssSecondary]);
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <HeroSection event={EVENT} />
       <CountdownSection event={EVENT} />
-      <RsvpSection event={EVENT} />
+      <RsvpSection event={EVENT} theme={theme} />
       <GuestListSection />
       <MapsSection event={EVENT} />
       <SpotifySection event={EVENT} />
@@ -554,12 +558,12 @@ function CounterField({ label, icon: Icon, value, onChange, min = 0, accentClass
 }
 
 /* ── RSVP Section ───────────────────────────────────── */
-function RsvpSection({ event }: { event: typeof DEFAULT_EVENT }) {
+function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: ThemeView }) {
   const queryClient = useQueryClient();
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
   const siteUrl = window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, "");
-  const activeTheme = getTheme(event.theme);
+  const activeTheme = theme;
   const form = useForm<RsvpFormValues>({
     resolver: zodResolver(rsvpSchema),
     defaultValues: { parentName: "", childName: "", phone: "", email: "", adultsCount: 1, childrenCount: 1, status: "confirmed", notes: "" },
@@ -574,7 +578,7 @@ function RsvpSection({ event }: { event: typeof DEFAULT_EVENT }) {
         queryClient.invalidateQueries({ queryKey: getListGuestsQueryKey() });
         const end = Date.now() + 3000;
         const rand = (a: number, b: number) => Math.random() * (b - a) + a;
-        const colors = [...activeTheme.confetti];
+        const colors = [...activeTheme.confettiColors];
         const iv = setInterval(() => {
           if (Date.now() > end) return clearInterval(iv);
           const n = 50 * ((end - Date.now()) / 3000);

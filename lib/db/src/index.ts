@@ -30,3 +30,4 @@ export const db: NodePgDatabase<typeof schema> = pool
     ) as NodePgDatabase<typeof schema>);
 
 export * from "./schema";
+export * from "./theme-presets";

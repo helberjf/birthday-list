@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, guestsTable } from "@workspace/db";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { dataStore } from "../lib/data-store";
 import { requireAdmin } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -36,10 +35,7 @@ router.post("/admin/send-whatsapp", requireAdmin, async (req, res): Promise<void
     return;
   }
 
-  let guests = await db
-    .select()
-    .from(guestsTable)
-    .where(and(eq(guestsTable.status, "confirmed"), isNotNull(guestsTable.phone)));
+  let guests = await dataStore.listConfirmedGuestsWithPhone();
 
   if (guestIds && Array.isArray(guestIds) && guestIds.length > 0) {
     guests = guests.filter((g) => guestIds.includes(g.id));

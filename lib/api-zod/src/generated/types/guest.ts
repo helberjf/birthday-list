@@ -14,6 +14,8 @@ export interface Guest {
   childName?: string | null;
   /** @nullable */
   phone?: string | null;
+  /** @nullable */
+  email?: string | null;
   adultsCount: number;
   childrenCount: number;
   status: GuestStatus;

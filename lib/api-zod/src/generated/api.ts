@@ -95,6 +95,186 @@ export const UpdateEventConfigResponse = zod.object({
 });
 
 /**
+ * @summary List active themes (public)
+ */
+export const ListThemesResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  emoji: zod.string(),
+  description: zod.string(),
+  heroBgFrom: zod.string(),
+  heroBgVia: zod.string(),
+  heroBgTo: zod.string(),
+  cssPrimary: zod.string(),
+  cssSecondary: zod.string(),
+  cssAccent: zod.string(),
+  confirmLabel: zod.string(),
+  successTitle: zod.string(),
+  successSub: zod.string(),
+  confettiColors: zod.array(zod.string()),
+  photoRecommendation: zod.string(),
+  photoPrompt: zod.string(),
+  isActive: zod.boolean(),
+  isBuiltIn: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListThemesResponse = zod.array(ListThemesResponseItem);
+
+/**
+ * @summary List all themes (admin)
+ */
+export const ListAdminThemesResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  emoji: zod.string(),
+  description: zod.string(),
+  heroBgFrom: zod.string(),
+  heroBgVia: zod.string(),
+  heroBgTo: zod.string(),
+  cssPrimary: zod.string(),
+  cssSecondary: zod.string(),
+  cssAccent: zod.string(),
+  confirmLabel: zod.string(),
+  successTitle: zod.string(),
+  successSub: zod.string(),
+  confettiColors: zod.array(zod.string()),
+  photoRecommendation: zod.string(),
+  photoPrompt: zod.string(),
+  isActive: zod.boolean(),
+  isBuiltIn: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListAdminThemesResponse = zod.array(ListAdminThemesResponseItem);
+
+/**
+ * @summary Create theme (admin)
+ */
+export const createThemeBodySlugMin = 2;
+
+export const createThemeBodyNameMin = 2;
+
+export const createThemeBodyDescriptionMin = 10;
+
+export const createThemeBodyConfirmLabelMin = 2;
+
+export const createThemeBodySuccessTitleMin = 2;
+
+export const createThemeBodySuccessSubMin = 2;
+
+export const createThemeBodyPhotoRecommendationMin = 10;
+
+export const createThemeBodyPhotoPromptMin = 20;
+
+export const createThemeBodyIsActiveDefault = true;
+export const createThemeBodyDisplayOrderDefault = 0;
+
+export const CreateThemeBody = zod.object({
+  slug: zod.string().min(createThemeBodySlugMin),
+  name: zod.string().min(createThemeBodyNameMin),
+  emoji: zod.string().min(1),
+  description: zod.string().min(createThemeBodyDescriptionMin),
+  heroBgFrom: zod.string(),
+  heroBgVia: zod.string(),
+  heroBgTo: zod.string(),
+  cssPrimary: zod.string(),
+  cssSecondary: zod.string(),
+  cssAccent: zod.string(),
+  confirmLabel: zod.string().min(createThemeBodyConfirmLabelMin),
+  successTitle: zod.string().min(createThemeBodySuccessTitleMin),
+  successSub: zod.string().min(createThemeBodySuccessSubMin),
+  confettiColors: zod.array(zod.string()).min(1),
+  photoRecommendation: zod.string().min(createThemeBodyPhotoRecommendationMin),
+  photoPrompt: zod.string().min(createThemeBodyPhotoPromptMin),
+  isActive: zod.boolean().default(createThemeBodyIsActiveDefault),
+  displayOrder: zod.number().default(createThemeBodyDisplayOrderDefault),
+});
+
+/**
+ * @summary Update theme (admin)
+ */
+export const UpdateThemeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateThemeBodySlugMin = 2;
+
+export const updateThemeBodyNameMin = 2;
+
+export const updateThemeBodyDescriptionMin = 10;
+
+export const updateThemeBodyConfirmLabelMin = 2;
+
+export const updateThemeBodySuccessTitleMin = 2;
+
+export const updateThemeBodySuccessSubMin = 2;
+
+export const updateThemeBodyPhotoRecommendationMin = 10;
+
+export const updateThemeBodyPhotoPromptMin = 20;
+
+export const UpdateThemeBody = zod.object({
+  slug: zod.string().min(updateThemeBodySlugMin).optional(),
+  name: zod.string().min(updateThemeBodyNameMin).optional(),
+  emoji: zod.string().min(1).optional(),
+  description: zod.string().min(updateThemeBodyDescriptionMin).optional(),
+  heroBgFrom: zod.string().optional(),
+  heroBgVia: zod.string().optional(),
+  heroBgTo: zod.string().optional(),
+  cssPrimary: zod.string().optional(),
+  cssSecondary: zod.string().optional(),
+  cssAccent: zod.string().optional(),
+  confirmLabel: zod.string().min(updateThemeBodyConfirmLabelMin).optional(),
+  successTitle: zod.string().min(updateThemeBodySuccessTitleMin).optional(),
+  successSub: zod.string().min(updateThemeBodySuccessSubMin).optional(),
+  confettiColors: zod.array(zod.string()).min(1).optional(),
+  photoRecommendation: zod
+    .string()
+    .min(updateThemeBodyPhotoRecommendationMin)
+    .optional(),
+  photoPrompt: zod.string().min(updateThemeBodyPhotoPromptMin).optional(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+export const UpdateThemeResponse = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  emoji: zod.string(),
+  description: zod.string(),
+  heroBgFrom: zod.string(),
+  heroBgVia: zod.string(),
+  heroBgTo: zod.string(),
+  cssPrimary: zod.string(),
+  cssSecondary: zod.string(),
+  cssAccent: zod.string(),
+  confirmLabel: zod.string(),
+  successTitle: zod.string(),
+  successSub: zod.string(),
+  confettiColors: zod.array(zod.string()),
+  photoRecommendation: zod.string(),
+  photoPrompt: zod.string(),
+  isActive: zod.boolean(),
+  isBuiltIn: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete theme (admin)
+ */
+export const DeleteThemeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary Public event statistics
  */
 export const GetPublicStatsResponse = zod.object({

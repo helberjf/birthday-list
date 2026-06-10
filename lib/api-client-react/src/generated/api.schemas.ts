@@ -122,6 +122,93 @@ export interface UpdatePhotoBody {
   displayOrder?: number;
 }
 
+export interface Theme {
+  id: number;
+  slug: string;
+  name: string;
+  emoji: string;
+  description: string;
+  heroBgFrom: string;
+  heroBgVia: string;
+  heroBgTo: string;
+  cssPrimary: string;
+  cssSecondary: string;
+  cssAccent: string;
+  confirmLabel: string;
+  successTitle: string;
+  successSub: string;
+  confettiColors: string[];
+  photoRecommendation: string;
+  photoPrompt: string;
+  isActive: boolean;
+  isBuiltIn: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateThemeBody {
+  /** @minLength 2 */
+  slug: string;
+  /** @minLength 2 */
+  name: string;
+  /** @minLength 1 */
+  emoji: string;
+  /** @minLength 10 */
+  description: string;
+  heroBgFrom: string;
+  heroBgVia: string;
+  heroBgTo: string;
+  cssPrimary: string;
+  cssSecondary: string;
+  cssAccent: string;
+  /** @minLength 2 */
+  confirmLabel: string;
+  /** @minLength 2 */
+  successTitle: string;
+  /** @minLength 2 */
+  successSub: string;
+  /** @minItems 1 */
+  confettiColors: string[];
+  /** @minLength 10 */
+  photoRecommendation: string;
+  /** @minLength 20 */
+  photoPrompt: string;
+  isActive?: boolean;
+  displayOrder?: number;
+}
+
+export interface UpdateThemeBody {
+  /** @minLength 2 */
+  slug?: string;
+  /** @minLength 2 */
+  name?: string;
+  /** @minLength 1 */
+  emoji?: string;
+  /** @minLength 10 */
+  description?: string;
+  heroBgFrom?: string;
+  heroBgVia?: string;
+  heroBgTo?: string;
+  cssPrimary?: string;
+  cssSecondary?: string;
+  cssAccent?: string;
+  /** @minLength 2 */
+  confirmLabel?: string;
+  /** @minLength 2 */
+  successTitle?: string;
+  /** @minLength 2 */
+  successSub?: string;
+  /** @minItems 1 */
+  confettiColors?: string[];
+  /** @minLength 10 */
+  photoRecommendation?: string;
+  /** @minLength 20 */
+  photoPrompt?: string;
+  isActive?: boolean;
+  displayOrder?: number;
+}
+
 export interface GuestAudit {
   id: number;
   /** @nullable */

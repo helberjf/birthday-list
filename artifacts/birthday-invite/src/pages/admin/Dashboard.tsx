@@ -24,14 +24,24 @@ import {
   useListPhotos, useCreatePhoto, useUpdatePhoto, useDeletePhoto,
   useListConfirmedGuests, useListGuestAudit,
   useGetWhatsAppStatus, useSendWhatsApp,
+  useListAdminThemes, useCreateTheme, useUpdateTheme, useDeleteTheme,
   listGuests, getListGuestsQueryKey, getGetAdminStatsQueryKey,
   getGetEventConfigQueryKey, getListPhotosQueryKey,
-  type Guest, type Photo,
+  getListAdminThemesQueryKey, getListThemesQueryKey,
+  type Guest, type Photo, type CreateThemeBody, type UpdateThemeBody,
 } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  BLANK_THEME_FORM,
+  getThemeBySlug,
+  getThemeCatalog,
+  normalizeThemeSlug,
+  themeToFormDefaults,
+  type ThemeView,
+} from "@/lib/themes";
 
 type Tab = "guests" | "gallery" | "reminders" | "audit" | "config";
 
@@ -854,9 +864,43 @@ const configSchema = z.object({
 });
 type ConfigValues = z.infer<typeof configSchema>;
 
+const themeFormSchema = z.object({
+  slug: z.string().min(2),
+  name: z.string().min(2),
+  emoji: z.string().min(1),
+  description: z.string().min(10),
+  heroBgFrom: z.string().min(1),
+  heroBgVia: z.string().min(1),
+  heroBgTo: z.string().min(1),
+  cssPrimary: z.string().min(1),
+  cssSecondary: z.string().min(1),
+  cssAccent: z.string().min(1),
+  confirmLabel: z.string().min(2),
+  successTitle: z.string().min(2),
+  successSub: z.string().min(2),
+  confettiColors: z.string().min(7),
+  photoRecommendation: z.string().min(10),
+  photoPrompt: z.string().min(20),
+  isActive: z.boolean(),
+  displayOrder: z.coerce.number().min(0),
+});
+type ThemeFormValues = z.infer<typeof themeFormSchema>;
+
+function themeFormToPayload(data: ThemeFormValues): CreateThemeBody {
+  return {
+    ...data,
+    slug: normalizeThemeSlug(data.slug),
+    confettiColors: data.confettiColors
+      .split(",")
+      .map((color) => color.trim())
+      .filter(Boolean),
+  };
+}
+
 function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string> }) {
   const queryClient = useQueryClient();
   const { data: config, isLoading } = useGetEventConfig();
+  const { data: adminThemes } = useListAdminThemes({ request: authHeaders });
   const [saved, setSaved] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -881,6 +925,9 @@ function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string
   const watchedImgUrl = form.watch("inviteImageUrl");
   const watchedGalleryEnabled = form.watch("galleryEnabled");
   const watchedTheme = form.watch("theme");
+  const themeOptions = getThemeCatalog(adminThemes, true);
+  const activeThemeOptions = themeOptions.filter((theme) => theme.isActive !== false);
+  const selectedTheme = getThemeBySlug(themeOptions, watchedTheme);
 
   useEffect(() => {
     if (config) {
@@ -1008,25 +1055,36 @@ function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string
             <p className="text-xs text-muted-foreground">Muda as cores, textos e confetes automaticamente.</p>
           </div>
         </div>
-        <div className="p-5 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-7 gap-3">
-          {THEME_PRESETS.map(t => {
-            const active = watchedTheme === t.id;
+        <div className="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+          {activeThemeOptions.map(t => {
+            const active = watchedTheme === t.slug;
             return (
-              <button key={t.id} type="button"
+              <button key={t.slug} type="button"
                 onClick={() => {
-                  form.setValue("theme", t.id);
-                  form.setValue("heroBgFrom", t.from);
-                  form.setValue("heroBgVia", t.via);
-                  form.setValue("heroBgTo", t.to);
+                  form.setValue("theme", t.slug);
+                  form.setValue("heroBgFrom", t.heroBgFrom);
+                  form.setValue("heroBgVia", t.heroBgVia);
+                  form.setValue("heroBgTo", t.heroBgTo);
                 }}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all ${active ? "border-primary shadow-md scale-[1.04]" : "border-border hover:border-muted-foreground/40"}`}>
-                <div className="w-full h-10 rounded-xl" style={{ background: `linear-gradient(to bottom right, ${t.from}, ${t.via}, ${t.to})` }} />
+                <div className="w-full h-10 rounded-xl" style={{ background: `linear-gradient(to bottom right, ${t.heroBgFrom}, ${t.heroBgVia}, ${t.heroBgTo})` }} />
                 <span className="text-2xl leading-none">{t.emoji}</span>
                 <span className={`text-xs font-bold ${active ? "text-primary" : "text-muted-foreground"}`}>{t.name}</span>
               </button>
             );
           })}
         </div>
+        <div className="px-5 pb-5">
+          <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-2">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Foto recomendada para {selectedTheme.name}</p>
+            <p className="text-sm text-foreground/80">{selectedTheme.photoRecommendation}</p>
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-1">Prompt para gerar imagem</p>
+              <Textarea value={selectedTheme.photoPrompt} readOnly className="rounded-xl bg-white text-xs min-h-[96px] resize-none" />
+            </div>
+          </div>
+        </div>
+        <ThemeCatalogManager authHeaders={authHeaders} themes={themeOptions} />
       </div>
 
       {/* Cor de fundo */}
@@ -1173,5 +1231,270 @@ function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string
         </button>
       </div>
     </form>
+  );
+}
+
+function ThemeCatalogManager({
+  authHeaders,
+  themes,
+}: {
+  authHeaders: Record<string, string>;
+  themes: ThemeView[];
+}) {
+  const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingTheme, setEditingTheme] = useState<ThemeView | null>(null);
+
+  const form = useForm<ThemeFormValues>({
+    resolver: zodResolver(themeFormSchema),
+    defaultValues: BLANK_THEME_FORM,
+  });
+
+  const refreshThemes = () => {
+    queryClient.invalidateQueries({ queryKey: getListAdminThemesQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListThemesQueryKey() });
+  };
+
+  const closeEditor = () => {
+    setIsOpen(false);
+    setEditingTheme(null);
+    form.reset(BLANK_THEME_FORM);
+  };
+
+  const createMutation = useCreateTheme({
+    request: authHeaders,
+    mutation: { onSuccess: () => { refreshThemes(); closeEditor(); } },
+  });
+  const updateMutation = useUpdateTheme({
+    request: authHeaders,
+    mutation: { onSuccess: () => { refreshThemes(); closeEditor(); } },
+  });
+  const deleteMutation = useDeleteTheme({
+    request: authHeaders,
+    mutation: { onSuccess: refreshThemes },
+  });
+
+  const busy = createMutation.isPending || updateMutation.isPending;
+
+  const openNewTheme = () => {
+    const nextOrder = Math.max(0, ...themes.map((theme) => theme.displayOrder)) + 10;
+    setEditingTheme(null);
+    form.reset({
+      ...BLANK_THEME_FORM,
+      slug: `tema-personalizado-${nextOrder}`,
+      displayOrder: nextOrder,
+    });
+    setIsOpen(true);
+  };
+
+  const openEditTheme = (theme: ThemeView) => {
+    setEditingTheme(theme);
+    form.reset(themeToFormDefaults(theme));
+    setIsOpen(true);
+  };
+
+  const duplicateTheme = (theme: ThemeView) => {
+    const nextOrder = Math.max(0, ...themes.map((item) => item.displayOrder)) + 10;
+    setEditingTheme(null);
+    form.reset({
+      ...themeToFormDefaults(theme, nextOrder),
+      slug: `${theme.slug}-novo`,
+      name: `${theme.name} Novo`,
+      displayOrder: nextOrder,
+    });
+    setIsOpen(true);
+  };
+
+  const submitTheme = form.handleSubmit((values) => {
+    const payload = themeFormToPayload(values);
+    if (editingTheme?.id) {
+      updateMutation.mutate({ id: editingTheme.id, data: payload as UpdateThemeBody });
+      return;
+    }
+    createMutation.mutate({ data: payload });
+  });
+
+  const toggleTheme = (theme: ThemeView) => {
+    if (!theme.id) return;
+    updateMutation.mutate({ id: theme.id, data: { isActive: theme.isActive === false } });
+  };
+
+  const removeTheme = (theme: ThemeView) => {
+    if (!theme.id) return;
+    const action = theme.isBuiltIn ? "desativar" : "excluir";
+    if (window.confirm(`Tem certeza que deseja ${action} o tema "${theme.name}"?`)) {
+      deleteMutation.mutate({ id: theme.id });
+    }
+  };
+
+  return (
+    <div className="border-t border-border bg-slate-50/50">
+      <div className="p-5 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold">Gerenciar temas do site</h3>
+            <p className="text-xs text-muted-foreground">Crie, edite, desative ou remova temas para vender convites personalizados.</p>
+          </div>
+          <button type="button" onClick={openNewTheme}
+            className="inline-flex items-center justify-center gap-2 bg-primary text-white rounded-xl px-4 py-2 text-sm font-bold hover:bg-primary/90">
+            <Plus className="w-4 h-4" /> Novo tema
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {themes.map((theme) => (
+            <div key={theme.slug} className={`bg-white border rounded-2xl p-3 shadow-sm ${theme.isActive === false ? "opacity-60 border-dashed" : "border-border"}`}>
+              <div className="flex items-start gap-3">
+                <div className="w-14 h-14 rounded-xl border border-border shrink-0 flex items-center justify-center text-2xl"
+                  style={{ background: `linear-gradient(to bottom right, ${theme.heroBgFrom}, ${theme.heroBgVia}, ${theme.heroBgTo})` }}>
+                  {theme.emoji}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="font-bold text-sm truncate">{theme.name}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${theme.isActive === false ? "bg-muted text-muted-foreground" : "bg-green-100 text-green-700"}`}>
+                      {theme.isActive === false ? "Inativo" : "Ativo"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{theme.slug}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{theme.photoRecommendation}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-1.5 mt-3">
+                <button type="button" onClick={() => duplicateTheme(theme)}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/40" title="Duplicar">
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onClick={() => openEditTheme(theme)}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/40" title="Editar">
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onClick={() => toggleTheme(theme)} disabled={!theme.id || updateMutation.isPending}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/40 disabled:opacity-40" title={theme.isActive === false ? "Ativar" : "Desativar"}>
+                  <Eye className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onClick={() => removeTheme(theme)} disabled={!theme.id || deleteMutation.isPending}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-destructive hover:bg-destructive/10 disabled:opacity-40" title={theme.isBuiltIn ? "Desativar tema padrao" : "Excluir"}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {isOpen && (
+          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold">{editingTheme ? `Editar ${editingTheme.name}` : "Criar tema"}</h3>
+                <p className="text-xs text-muted-foreground">O prompt nao deve incluir texto escrito, logos ou personagens protegidos.</p>
+              </div>
+              <button type="button" onClick={closeEditor} className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-muted/40">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="sm:col-span-2">
+                  <Label className="text-xs font-bold block mb-1.5">Nome</Label>
+                  <Input {...form.register("name")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Slug</Label>
+                  <Input {...form.register("slug")} onBlur={(e) => form.setValue("slug", normalizeThemeSlug(e.target.value))}
+                    className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Emoji</Label>
+                  <Input {...form.register("emoji")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold block mb-1.5">Descricao</Label>
+                <Textarea {...form.register("description")} className="rounded-xl bg-muted/20 text-sm min-h-[70px] resize-none" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {([["heroBgFrom", "Hero inicio"], ["heroBgVia", "Hero meio"], ["heroBgTo", "Hero fim"]] as const).map(([name, label]) => (
+                  <div key={name}>
+                    <Label className="text-xs font-bold block mb-1.5">{label}</Label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={form.watch(name)} onChange={(e) => form.setValue(name, e.target.value)}
+                        className="w-10 h-10 rounded-lg border border-border bg-transparent" />
+                      <Input {...form.register(name)} className="h-10 rounded-xl bg-muted/20 text-sm font-mono" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {([["cssPrimary", "CSS primaria"], ["cssSecondary", "CSS secundaria"], ["cssAccent", "CSS destaque"]] as const).map(([name, label]) => (
+                  <div key={name}>
+                    <Label className="text-xs font-bold block mb-1.5">{label}</Label>
+                    <Input {...form.register(name)} className="h-10 rounded-xl bg-muted/20 text-sm font-mono" placeholder="hsl(130 55% 28%)" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Botao RSVP</Label>
+                  <Input {...form.register("confirmLabel")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Titulo sucesso</Label>
+                  <Input {...form.register("successTitle")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Subtitulo sucesso</Label>
+                  <Input {...form.register("successSub")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Confete (hex separados por virgula)</Label>
+                  <Input {...form.register("confettiColors")} className="h-10 rounded-xl bg-muted/20 text-sm font-mono" />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold block mb-1.5">Ordem</Label>
+                  <Input type="number" min="0" {...form.register("displayOrder")} className="h-10 rounded-xl bg-muted/20 text-sm" />
+                </div>
+                <label className="flex items-end gap-2 text-sm font-bold text-muted-foreground pb-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 accent-primary" {...form.register("isActive")} />
+                  Tema ativo
+                </label>
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold block mb-1.5">Recomendacao de foto</Label>
+                <Textarea {...form.register("photoRecommendation")} className="rounded-xl bg-muted/20 text-sm min-h-[70px] resize-none" />
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold block mb-1.5">Prompt de imagem por IA</Label>
+                <Textarea {...form.register("photoPrompt")} className="rounded-xl bg-muted/20 text-sm min-h-[120px] resize-none" />
+              </div>
+
+              {(createMutation.isError || updateMutation.isError) && (
+                <p className="text-sm text-destructive font-bold bg-destructive/10 rounded-xl p-3">Nao foi possivel salvar o tema. Confira slug unico e campos obrigatorios.</p>
+              )}
+
+              <div className="flex items-center justify-end gap-2">
+                <button type="button" onClick={closeEditor}
+                  className="px-4 py-2 rounded-xl border border-border text-sm font-bold hover:bg-muted/40">Cancelar</button>
+                <button type="button" onClick={submitTheme} disabled={busy}
+                  className="inline-flex items-center gap-2 bg-primary text-white rounded-xl px-5 py-2 text-sm font-bold hover:bg-primary/90 disabled:opacity-60">
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {editingTheme ? "Salvar tema" : "Criar tema"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

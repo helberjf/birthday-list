@@ -15,6 +15,8 @@ tags:
     description: Admin operations
   - name: photos
     description: Photo gallery
+  - name: themes
+    description: Theme catalog
 paths:
   /healthz:
     get:
@@ -60,6 +62,121 @@ paths:
                 $ref: "#/components/schemas/EventConfig"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /themes:
+    get:
+      operationId: listThemes
+      tags: [themes]
+      summary: List active themes (public)
+      responses:
+        "200":
+          description: Active theme catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Theme"
+
+  /admin/themes:
+    get:
+      operationId: listAdminThemes
+      tags: [themes]
+      summary: List all themes (admin)
+      responses:
+        "200":
+          description: Theme catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Theme"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createTheme
+      tags: [themes]
+      summary: Create theme (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateThemeBody"
+      responses:
+        "201":
+          description: Theme created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/themes/{id}:
+    patch:
+      operationId: updateTheme
+      tags: [themes]
+      summary: Update theme (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateThemeBody"
+      responses:
+        "200":
+          description: Theme updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+        "404":
+          description: Theme not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTheme
+      tags: [themes]
+      summary: Delete theme (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Theme deleted
+        "404":
+          description: Theme not found
           content:
             application/json:
               schema:
@@ -620,6 +737,204 @@ components:
       properties:
         caption:
           type: ["string", "null"]
+        displayOrder:
+          type: integer
+
+    Theme:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        name:
+          type: string
+        emoji:
+          type: string
+        description:
+          type: string
+        heroBgFrom:
+          type: string
+        heroBgVia:
+          type: string
+        heroBgTo:
+          type: string
+        cssPrimary:
+          type: string
+        cssSecondary:
+          type: string
+        cssAccent:
+          type: string
+        confirmLabel:
+          type: string
+        successTitle:
+          type: string
+        successSub:
+          type: string
+        confettiColors:
+          type: array
+          items:
+            type: string
+        photoRecommendation:
+          type: string
+        photoPrompt:
+          type: string
+        isActive:
+          type: boolean
+        isBuiltIn:
+          type: boolean
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - name
+        - emoji
+        - description
+        - heroBgFrom
+        - heroBgVia
+        - heroBgTo
+        - cssPrimary
+        - cssSecondary
+        - cssAccent
+        - confirmLabel
+        - successTitle
+        - successSub
+        - confettiColors
+        - photoRecommendation
+        - photoPrompt
+        - isActive
+        - isBuiltIn
+        - displayOrder
+        - createdAt
+        - updatedAt
+
+    CreateThemeBody:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 2
+        name:
+          type: string
+          minLength: 2
+        emoji:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 10
+        heroBgFrom:
+          type: string
+        heroBgVia:
+          type: string
+        heroBgTo:
+          type: string
+        cssPrimary:
+          type: string
+        cssSecondary:
+          type: string
+        cssAccent:
+          type: string
+        confirmLabel:
+          type: string
+          minLength: 2
+        successTitle:
+          type: string
+          minLength: 2
+        successSub:
+          type: string
+          minLength: 2
+        confettiColors:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        photoRecommendation:
+          type: string
+          minLength: 10
+        photoPrompt:
+          type: string
+          minLength: 20
+        isActive:
+          type: boolean
+          default: true
+        displayOrder:
+          type: integer
+          default: 0
+      required:
+        - slug
+        - name
+        - emoji
+        - description
+        - heroBgFrom
+        - heroBgVia
+        - heroBgTo
+        - cssPrimary
+        - cssSecondary
+        - cssAccent
+        - confirmLabel
+        - successTitle
+        - successSub
+        - confettiColors
+        - photoRecommendation
+        - photoPrompt
+
+    UpdateThemeBody:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 2
+        name:
+          type: string
+          minLength: 2
+        emoji:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 10
+        heroBgFrom:
+          type: string
+        heroBgVia:
+          type: string
+        heroBgTo:
+          type: string
+        cssPrimary:
+          type: string
+        cssSecondary:
+          type: string
+        cssAccent:
+          type: string
+        confirmLabel:
+          type: string
+          minLength: 2
+        successTitle:
+          type: string
+          minLength: 2
+        successSub:
+          type: string
+          minLength: 2
+        confettiColors:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        photoRecommendation:
+          type: string
+          minLength: 10
+        photoPrompt:
+          type: string
+          minLength: 20
+        isActive:
+          type: boolean
         displayOrder:
           type: integer
 

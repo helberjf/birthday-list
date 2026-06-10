@@ -2,8 +2,10 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "node:fs";
 import { DatabaseNotConfiguredError } from "@workspace/db";
 import router from "./routes";
+import { FirebaseNotConfiguredError } from "./lib/firebase-store";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -47,11 +49,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api", router);
 
+const publicDir = path.resolve(process.cwd(), "artifacts", "birthday-invite", "dist", "public");
+if (process.env["SERVE_STATIC_FRONTEND"] === "true" && fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+  app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(publicDir, "index.html"));
+  });
+}
+
 app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof DatabaseNotConfiguredError) {
     res.status(503).json({
       error:
-        "DATABASE_URL nao esta configurada. Configure um Postgres na Vercel para habilitar API, RSVP e admin.",
+        "PostgreSQL nao esta configurado. Defina DATABASE_URL ou use DATABASE_PROVIDER=firebase para Firebase.",
+    });
+    return;
+  }
+
+  if (err instanceof FirebaseNotConfiguredError) {
+    res.status(503).json({
+      error:
+        "Firebase nao esta configurado. Use FIRESTORE_EMULATOR_HOST para local ou configure credenciais Firebase para producao.",
     });
     return;
   }
