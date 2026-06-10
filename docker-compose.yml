@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-birthday}
+      POSTGRES_USER: ${POSTGRES_USER:-birthday}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-birthday_local_password}
+    volumes:
+      - birthday_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-birthday} -d ${POSTGRES_DB:-birthday}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      SERVE_STATIC_FRONTEND: "true"
+      DATABASE_PROVIDER: postgres
+      DATABASE_URL: postgresql://${POSTGRES_USER:-birthday}:${POSTGRES_PASSWORD:-birthday_local_password}@postgres:5432/${POSTGRES_DB:-birthday}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-before-production}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-Festa <festa@seudominio.com>}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+    ports:
+      - "3000:3000"
+    volumes:
+      - birthday_uploads:/app/uploads
+
+volumes:
+  birthday_postgres_data:
+  birthday_uploads:

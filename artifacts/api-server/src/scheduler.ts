@@ -1,6 +1,5 @@
 import cron from "node-cron";
-import { db, guestsTable, eventConfigTable } from "@workspace/db";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { dataStore } from "./lib/data-store";
 import { logger } from "./lib/logger";
 
 function formatPhone(phone: string): string {
@@ -21,7 +20,7 @@ async function checkAndSendReminders(): Promise<void> {
   const phoneId = process.env.WHATSAPP_PHONE_ID;
   if (!token || !phoneId) return;
 
-  const [config] = await db.select().from(eventConfigTable).limit(1);
+  const config = await dataStore.getOrCreateEventConfig();
   if (!config?.whatsappReminderEnabled) return;
 
   const eventDate = parseDateLabel(config.dateLabel);
@@ -39,10 +38,7 @@ async function checkAndSendReminders(): Promise<void> {
 
   logger.info({ daysBefore, eventDate: config.dateLabel }, "Sending scheduled WhatsApp reminders");
 
-  const guests = await db
-    .select()
-    .from(guestsTable)
-    .where(and(eq(guestsTable.status, "confirmed"), isNotNull(guestsTable.phone)));
+  const guests = await dataStore.listConfirmedGuestsWithPhone();
 
   const timeWord = daysBefore === 1 ? "amanhã" : `em ${daysBefore} dias`;
   const baseMsg =

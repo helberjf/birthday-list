@@ -6,6 +6,7 @@ import eventConfigRouter from "./event-config";
 import uploadRouter from "./upload";
 import photosRouter from "./photos";
 import whatsappRouter from "./whatsapp";
+import themesRouter from "./themes";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(eventConfigRouter);
 router.use(uploadRouter);
 router.use(photosRouter);
 router.use(whatsappRouter);
+router.use(themesRouter);
 
 export default router;

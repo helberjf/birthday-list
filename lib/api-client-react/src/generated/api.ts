@@ -22,6 +22,7 @@ import type {
   AdminStats,
   CreateGuestBody,
   CreatePhotoBody,
+  CreateThemeBody,
   ErrorResponse,
   EventConfig,
   Guest,
@@ -35,9 +36,11 @@ import type {
   PublicStats,
   SendWhatsAppBody,
   SendWhatsAppResponse,
+  Theme,
   UpdateEventConfigBody,
   UpdateGuestBody,
   UpdatePhotoBody,
+  UpdateThemeBody,
   WhatsAppStatus,
 } from "./api.schemas";
 
@@ -284,6 +287,411 @@ export const useUpdateEventConfig = <
   TContext
 > => {
   return useMutation(getUpdateEventConfigMutationOptions(options));
+};
+
+/**
+ * @summary List active themes (public)
+ */
+export const getListThemesUrl = () => {
+  return `/api/themes`;
+};
+
+export const listThemes = async (options?: RequestInit): Promise<Theme[]> => {
+  return customFetch<Theme[]>(getListThemesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListThemesQueryKey = () => {
+  return [`/api/themes`] as const;
+};
+
+export const getListThemesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listThemes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listThemes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListThemesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listThemes>>> = ({
+    signal,
+  }) => listThemes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listThemes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListThemesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listThemes>>
+>;
+export type ListThemesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active themes (public)
+ */
+
+export function useListThemes<
+  TData = Awaited<ReturnType<typeof listThemes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listThemes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListThemesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all themes (admin)
+ */
+export const getListAdminThemesUrl = () => {
+  return `/api/admin/themes`;
+};
+
+export const listAdminThemes = async (
+  options?: RequestInit,
+): Promise<Theme[]> => {
+  return customFetch<Theme[]>(getListAdminThemesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListAdminThemesQueryKey = () => {
+  return [`/api/admin/themes`] as const;
+};
+
+export const getListAdminThemesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAdminThemes>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAdminThemes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListAdminThemesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminThemes>>> = ({
+    signal,
+  }) => listAdminThemes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAdminThemes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAdminThemesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAdminThemes>>
+>;
+export type ListAdminThemesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List all themes (admin)
+ */
+
+export function useListAdminThemes<
+  TData = Awaited<ReturnType<typeof listAdminThemes>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAdminThemes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAdminThemesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create theme (admin)
+ */
+export const getCreateThemeUrl = () => {
+  return `/api/admin/themes`;
+};
+
+export const createTheme = async (
+  createThemeBody: CreateThemeBody,
+  options?: RequestInit,
+): Promise<Theme> => {
+  return customFetch<Theme>(getCreateThemeUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createThemeBody),
+  });
+};
+
+export const getCreateThemeMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTheme>>,
+    TError,
+    { data: BodyType<CreateThemeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTheme>>,
+  TError,
+  { data: BodyType<CreateThemeBody> },
+  TContext
+> => {
+  const mutationKey = ["createTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTheme>>,
+    { data: BodyType<CreateThemeBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createTheme(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTheme>>
+>;
+export type CreateThemeMutationBody = BodyType<CreateThemeBody>;
+export type CreateThemeMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create theme (admin)
+ */
+export const useCreateTheme = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTheme>>,
+    TError,
+    { data: BodyType<CreateThemeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createTheme>>,
+  TError,
+  { data: BodyType<CreateThemeBody> },
+  TContext
+> => {
+  return useMutation(getCreateThemeMutationOptions(options));
+};
+
+/**
+ * @summary Update theme (admin)
+ */
+export const getUpdateThemeUrl = (id: number) => {
+  return `/api/admin/themes/${id}`;
+};
+
+export const updateTheme = async (
+  id: number,
+  updateThemeBody: UpdateThemeBody,
+  options?: RequestInit,
+): Promise<Theme> => {
+  return customFetch<Theme>(getUpdateThemeUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateThemeBody),
+  });
+};
+
+export const getUpdateThemeMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTheme>>,
+    TError,
+    { id: number; data: BodyType<UpdateThemeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTheme>>,
+  TError,
+  { id: number; data: BodyType<UpdateThemeBody> },
+  TContext
+> => {
+  const mutationKey = ["updateTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTheme>>,
+    { id: number; data: BodyType<UpdateThemeBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateTheme(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTheme>>
+>;
+export type UpdateThemeMutationBody = BodyType<UpdateThemeBody>;
+export type UpdateThemeMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update theme (admin)
+ */
+export const useUpdateTheme = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTheme>>,
+    TError,
+    { id: number; data: BodyType<UpdateThemeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateTheme>>,
+  TError,
+  { id: number; data: BodyType<UpdateThemeBody> },
+  TContext
+> => {
+  return useMutation(getUpdateThemeMutationOptions(options));
+};
+
+/**
+ * @summary Delete theme (admin)
+ */
+export const getDeleteThemeUrl = (id: number) => {
+  return `/api/admin/themes/${id}`;
+};
+
+export const deleteTheme = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteThemeUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteThemeMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTheme>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTheme>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTheme>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteTheme(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTheme>>
+>;
+
+export type DeleteThemeMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete theme (admin)
+ */
+export const useDeleteTheme = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTheme>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTheme>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteThemeMutationOptions(options));
 };
 
 /**

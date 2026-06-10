@@ -14,6 +14,8 @@ export interface CreateGuestBody {
   childName?: string | null;
   /** @nullable */
   phone?: string | null;
+  /** @nullable */
+  email?: string | null;
   /** @minimum 1 */
   adultsCount: number;
   /** @minimum 0 */

@@ -1,6 +1,12 @@
-import app from "./app";
-import { logger } from "./lib/logger";
-import { startScheduler } from "./scheduler";
+import { loadEnvFiles } from "./lib/load-env";
+
+loadEnvFiles();
+
+const [{ default: app }, { logger }, { startScheduler }] = await Promise.all([
+  import("./app"),
+  import("./lib/logger"),
+  import("./scheduler"),
+]);
 
 if (!process.env["JWT_SECRET"]) {
   throw new Error("JWT_SECRET environment variable is required but was not provided.");

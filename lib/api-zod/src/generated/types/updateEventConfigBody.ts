@@ -30,4 +30,11 @@ export interface UpdateEventConfigBody {
   musicUrl?: string | null;
   galleryEnabled?: boolean;
   galleryTitle?: string;
+  theme?: string;
+  /** @nullable */
+  spotifyPlaylistUrl?: string | null;
+  /** @nullable */
+  mapsUrl?: string | null;
+  whatsappReminderEnabled?: boolean;
+  whatsappReminderDaysBefore?: string;
 }

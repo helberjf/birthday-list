@@ -1,20 +1,37 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import rateLimit from "express-rate-limit";
-import { db, guestsTable } from "@workspace/db";
-import { eq, count, sum } from "drizzle-orm";
 import { AdminLoginBody } from "@workspace/api-zod";
+import { dataStore } from "../lib/data-store";
 import { requireAdmin } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Muitas tentativas. Tente novamente em 15 minutos." },
-});
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function createLoginLimiter(windowMs: number, max: number): RequestHandler {
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = req.ip || req.socket.remoteAddress || "unknown";
+    const current = loginAttempts.get(key);
+    const bucket = current && current.resetAt > now ? current : { count: 0, resetAt: now + windowMs };
+
+    bucket.count += 1;
+    loginAttempts.set(key, bucket);
+
+    if (bucket.count > max) {
+      res.status(429).json({ error: "Muitas tentativas. Tente novamente em 15 minutos." });
+      return;
+    }
+
+    for (const [attemptKey, attempt] of loginAttempts) {
+      if (attempt.resetAt <= now) loginAttempts.delete(attemptKey);
+    }
+
+    next();
+  };
+}
+
+const loginLimiter = createLoginLimiter(15 * 60 * 1000, 10);
 
 router.post("/admin/login", loginLimiter, async (req, res): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
@@ -41,39 +58,7 @@ router.post("/admin/logout", async (_req, res): Promise<void> => {
 });
 
 router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
-  const [totalRow] = await db.select({ count: count() }).from(guestsTable);
-
-  const [confirmedRow] = await db
-    .select({ count: count() })
-    .from(guestsTable)
-    .where(eq(guestsTable.status, "confirmed"));
-
-  const [maybeRow] = await db
-    .select({ count: count() })
-    .from(guestsTable)
-    .where(eq(guestsTable.status, "maybe"));
-
-  const [declinedRow] = await db
-    .select({ count: count() })
-    .from(guestsTable)
-    .where(eq(guestsTable.status, "declined"));
-
-  const [adultsRow] = await db
-    .select({ total: sum(guestsTable.adultsCount) })
-    .from(guestsTable);
-
-  const [childrenRow] = await db
-    .select({ total: sum(guestsTable.childrenCount) })
-    .from(guestsTable);
-
-  res.json({
-    total: totalRow?.count ?? 0,
-    confirmed: confirmedRow?.count ?? 0,
-    maybe: maybeRow?.count ?? 0,
-    declined: declinedRow?.count ?? 0,
-    totalAdults: Number(adultsRow?.total ?? 0),
-    totalChildren: Number(childrenRow?.total ?? 0),
-  });
+  res.json(await dataStore.getAdminStats());
 });
 
 export default router;
