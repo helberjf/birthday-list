@@ -1,196 +1,99 @@
-# Birthday List - Convite de aniversario infantil
+# Birthday List — Kids' Party Digital Invitations
 
-Webapp para vender convites digitais personalizados de festa infantil, com RSVP, painel admin, fotos, lembretes e catalogo de temas.
+A web app to sell personalized digital invitations for kids' parties, with RSVP, an admin panel, photos, reminders and a theme catalog.
+
+**Live demo:** https://birthday-list-eta.vercel.app
 
 ## Stack
 
-| Camada | Tecnologia |
-| --- | --- |
+| Layer | Technology |
+|---|---|
 | Monorepo | pnpm workspaces |
 | Frontend | React + Vite + Tailwind CSS |
 | Backend | Express 5 |
-| Banco padrao | PostgreSQL + Drizzle |
-| Banco opcional | Firebase Firestore via REST |
-| Validacao | Zod |
-| API client | React Query + Orval |
+| Default database | PostgreSQL + Drizzle ORM |
+| Optional database | Firebase Firestore (via REST) |
+| Validation | Zod |
+| API client | React Query + Orval (generated from OpenAPI) |
 
-## Requisitos
+## Requirements
 
-- [Node.js](https://nodejs.org/) >= 22
-- [pnpm](https://pnpm.io/) >= 9 (`npm i -g pnpm`)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- Node.js >= 22
+- pnpm >= 9 (`npm i -g pnpm`)
+- Docker Desktop
 
-## Rodar localmente (script automatico)
+## Run locally (automatic script)
 
-### Linux / macOS / Git Bash / WSL
+**Linux / macOS / Git Bash / WSL**
 
 ```bash
 bash dev.sh
-```
-
-Para resetar o banco do zero:
-
-```bash
+# reset the database from scratch:
 bash dev.sh --reset
 ```
 
-### Windows (PowerShell)
+**Windows (PowerShell)**
 
 ```powershell
 .\dev.ps1
-```
-
-Para resetar o banco do zero:
-
-```powershell
+# reset the database from scratch:
 .\dev.ps1 -Reset
 ```
 
-Os scripts fazem automaticamente:
+The scripts automatically: check prerequisites (Node >= 22, pnpm, Docker), copy `.env.example` → `.env.local` if missing, install dependencies, start PostgreSQL via Docker, apply the schema (`db push`), and start the API (port 3000) and frontend (port 5173) in parallel.
 
-1. Verificam pre-requisitos (Node >= 22, pnpm, Docker)
-1. Copiam `.env.example` -> `.env.local` se nao existir
-1. Instalam dependencias (`pnpm install`)
-1. Sobem o Postgres via Docker
-1. Aplicam o schema no banco (`db push`)
-1. Iniciam API (porta 3000) e frontend (porta 5173) em paralelo
+URLs after startup:
 
-URLs apos subir:
+| URL | Description |
+|---|---|
+| http://localhost:5173 | Frontend |
+| http://localhost:5173/admin | Admin panel |
+| http://localhost:3000/api | REST API |
 
-| URL | Descricao |
-| --- | --- |
-| `http://localhost:5173` | Frontend |
-| `http://localhost:5173/admin` | Painel admin |
-| `http://localhost:3000/api` | API REST |
+Default admin password: `admin123` (env var `ADMIN_PASSWORD` in `.env.local`).
 
-Senha admin padrao: `admin123` (variavel `ADMIN_PASSWORD` em `.env.local`)
-
-## Rodar localmente (passo a passo manual)
-
-1. Instale dependencias:
+## Run locally (manual)
 
 ```bash
 pnpm install
-```
-
-1. Copie as variaveis de ambiente:
-
-```bash
 cp .env.example .env.local
-```
-
-1. Suba o Postgres:
-
-```bash
 docker compose up -d postgres
-```
-
-1. Crie/atualize as tabelas:
-
-```bash
 pnpm --filter @workspace/db run push
+# in separate terminals:
+pnpm run dev:api   # port 3000
+pnpm run dev:web   # port 5173
 ```
 
-1. Inicie a API e o frontend (em terminais separados):
+## Deploy to Vercel with Firebase (recommended)
 
-```bash
-pnpm run dev:api   # porta 3000
-pnpm run dev:web   # porta 5173
-```
+1. Create a Firebase project, enable Firestore, and generate a service account key.
+2. In the Vercel project, set the environment variables:
 
-## Deploy no Vercel com Firebase (recomendado)
-
-### 1. Crie o projeto no Firebase
-
-1. Acesse [console.firebase.google.com](https://console.firebase.google.com) e crie um projeto.
-1. Ative o **Firestore Database** (modo producao ou teste).
-1. Va em **Project Settings > Service Accounts > Generate new private key** e baixe o JSON.
-
-### 2. Configure as variaveis no Vercel
-
-No dashboard do seu projeto Vercel, va em **Settings > Environment Variables** e adicione:
-
-| Variavel | Valor |
-| --- | --- |
+| Variable | Value |
+|---|---|
 | `DATABASE_PROVIDER` | `firebase` |
-| `FIREBASE_PROJECT_ID` | ID do seu projeto Firebase |
+| `FIREBASE_PROJECT_ID` | your Firebase project ID |
 | `FIREBASE_DATABASE_ID` | `(default)` |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Conteudo do JSON da service account |
-| `JWT_SECRET` | String longa e aleatoria |
-| `ADMIN_PASSWORD` | Senha do painel admin |
-| `ALLOWED_ORIGINS` | `https://seuapp.vercel.app` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | the service account JSON |
+| `JWT_SECRET` | long random string |
+| `ADMIN_PASSWORD` | admin panel password |
+| `ALLOWED_ORIGINS` | `https://yourapp.vercel.app` |
 
-Referencia completa em `.env.vercel.example`.
+3. Connect the repository and deploy (`npx vercel --prod` or via the Vercel dashboard). `vercel.json` is configured with build `pnpm run build:vercel`, output `artifacts/birthday-invite/dist/public`, and rewrites (`/api/*` → serverless function, `/admin/*` → SPA).
 
-### 3. Conecte o repositorio e faça deploy
-
-```bash
-# via Vercel CLI
-npx vercel --prod
-```
-
-Ou conecte o repositorio pelo dashboard da Vercel — o build roda automaticamente a cada push na branch `main`.
-
-O arquivo `vercel.json` ja esta configurado com:
-
-- Build: `pnpm run build:vercel`
-- Output: `artifacts/birthday-invite/dist/public`
-- Rewrites: `/api/*` → serverless function, `/admin/*` → SPA
-
-## Deploy em VPS com Docker
-
-1. Copie o exemplo de variaveis:
+## Deploy to a VPS with Docker
 
 ```bash
 cp .env.vps.example .env
-```
-
-1. Edite `.env` e troque principalmente:
-
-```text
-POSTGRES_PASSWORD
-JWT_SECRET
-ADMIN_PASSWORD
-ALLOWED_ORIGINS
-```
-
-1. Suba app + Postgres:
-
-```bash
+# edit POSTGRES_PASSWORD, JWT_SECRET, ADMIN_PASSWORD, ALLOWED_ORIGINS
 docker compose up -d --build
 ```
 
-O container do app roda `drizzle push` na inicializacao, serve o frontend buildado e expoe tudo em:
+The app container runs `drizzle push` on startup, serves the built frontend and exposes everything on `http://YOUR_IP:3000`. In production, put Nginx/Caddy/Traefik in front for HTTPS and a domain.
 
-```text
-http://SEU_IP:3000
-```
+> PostgreSQL is the default. To use Firebase, copy `.env.firebase.example` to `.env.local` and set `DATABASE_PROVIDER=firebase` (use the Firestore emulator locally, or a real Firebase project with the service account).
 
-Em producao, coloque Nginx/Caddy/Traefik na frente para HTTPS e dominio.
-
-## Firebase como opcao (desenvolvimento local)
-
-Postgres e o padrao. Para usar Firebase, copie:
-
-```bash
-cp .env.firebase.example .env.local
-```
-
-E deixe:
-
-```env
-DATABASE_PROVIDER=firebase
-```
-
-Para emulator local, mantenha:
-
-```env
-FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
-```
-
-Para Firebase real, remova `FIRESTORE_EMULATOR_HOST` e configure `FIREBASE_SERVICE_ACCOUNT_JSON` ou `FIREBASE_CLIENT_EMAIL` + `FIREBASE_PRIVATE_KEY`.
-
-## Scripts uteis
+## Useful scripts
 
 ```bash
 pnpm run dev:api
@@ -201,18 +104,22 @@ pnpm run build
 pnpm --filter @workspace/api-spec run codegen
 ```
 
-## Endpoints principais
+## Main endpoints
 
-| Metodo | Rota | Descricao |
-| --- | --- | --- |
-| GET | `/api/event-config` | Configuracao publica do evento |
-| GET | `/api/themes` | Temas ativos |
-| GET | `/api/guests` | Lista de convidados |
-| POST | `/api/guests` | Confirmar presenca |
-| GET | `/api/stats` | Estatisticas publicas |
-| GET | `/api/photos` | Fotos da galeria |
-| POST | `/api/admin/login` | Login do admin |
-| PUT | `/api/event-config` | Atualizar evento |
-| GET/POST/PATCH/DELETE | `/api/admin/themes` | CRUD de temas |
+| Method | Route | Description |
+|---|---|---|
+| GET | `/api/event-config` | Public event configuration |
+| GET | `/api/themes` | Active themes |
+| GET | `/api/guests` | Guest list |
+| POST | `/api/guests` | Confirm attendance (RSVP) |
+| GET | `/api/stats` | Public statistics |
+| GET | `/api/photos` | Gallery photos |
+| POST | `/api/admin/login` | Admin login |
+| PUT | `/api/event-config` | Update event |
+| GET/POST/PATCH/DELETE | `/api/admin/themes` | Themes CRUD |
 
-Spec completa em `lib/api-spec/openapi.yaml`.
+Full spec in `lib/api-spec/openapi.yaml`.
+
+## License
+
+MIT
