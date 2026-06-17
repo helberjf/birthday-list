@@ -1,5 +1,7 @@
 # Birthday List — Kids' Party Digital Invitations
 
+[![CI](https://github.com/helberjf/birthday-list/actions/workflows/ci.yml/badge.svg)](https://github.com/helberjf/birthday-list/actions/workflows/ci.yml)
+
 A web app to sell personalized digital invitations for kids' parties, with RSVP, an admin panel, photos, reminders and a theme catalog.
 
 **Live demo:** https://birthday-list-eta.vercel.app
