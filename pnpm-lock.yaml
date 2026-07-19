@@ -100,6 +100,9 @@ importers:
       '@libsql/client':
         specifier: ^0.17.4
         version: 0.17.4
+      '@libsql/win32-x64-msvc':
+        specifier: ^0.5.29
+        version: 0.5.29
       '@vercel/blob':
         specifier: ^2.1.1
         version: 2.4.0
@@ -4199,8 +4202,7 @@ snapshots:
   '@libsql/linux-x64-musl@0.5.29':
     optional: true
 
-  '@libsql/win32-x64-msvc@0.5.29':
-    optional: true
+  '@libsql/win32-x64-msvc@0.5.29': {}
 
   '@neon-rs/load@0.0.4': {}
 
