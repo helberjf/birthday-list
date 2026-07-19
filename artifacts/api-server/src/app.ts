@@ -7,6 +7,7 @@ import { DatabaseNotConfiguredError } from "@workspace/db";
 import router from "./routes";
 import { FirebaseNotConfiguredError } from "./lib/firebase-store";
 import { logger } from "./lib/logger";
+import { TursoNotConfiguredError } from "./lib/turso-store";
 
 const app: Express = express();
 
@@ -70,6 +71,14 @@ app.use((err: unknown, _req: express.Request, res: express.Response, next: expre
     res.status(503).json({
       error:
         "Firebase nao esta configurado. Use FIRESTORE_EMULATOR_HOST para local ou configure credenciais Firebase para producao.",
+    });
+    return;
+  }
+
+  if (err instanceof TursoNotConfiguredError) {
+    res.status(503).json({
+      error:
+        "Turso nao esta configurado. Defina DATABASE_URL=libsql://... e DATABASE_AUTH_TOKEN (ou TURSO_AUTH_TOKEN).",
     });
     return;
   }
