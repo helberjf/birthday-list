@@ -865,22 +865,22 @@ const configSchema = z.object({
 type ConfigValues = z.infer<typeof configSchema>;
 
 const themeFormSchema = z.object({
-  slug: z.string().min(2),
-  name: z.string().min(2),
-  emoji: z.string().min(1),
-  description: z.string().min(10),
-  heroBgFrom: z.string().min(1),
-  heroBgVia: z.string().min(1),
-  heroBgTo: z.string().min(1),
-  cssPrimary: z.string().min(1),
-  cssSecondary: z.string().min(1),
-  cssAccent: z.string().min(1),
-  confirmLabel: z.string().min(2),
-  successTitle: z.string().min(2),
-  successSub: z.string().min(2),
-  confettiColors: z.string().min(7),
-  photoRecommendation: z.string().min(10),
-  photoPrompt: z.string().min(20),
+  slug: z.string().trim().min(2, "Slug precisa ter ao menos 2 caracteres."),
+  name: z.string().trim().min(2, "Nome precisa ter ao menos 2 caracteres."),
+  emoji: z.string().trim().min(1, "Informe um emoji."),
+  description: z.string().trim().min(1, "Descricao obrigatoria."),
+  heroBgFrom: z.string().trim().min(1, "Cor inicial obrigatoria."),
+  heroBgVia: z.string().trim().min(1, "Cor do meio obrigatoria."),
+  heroBgTo: z.string().trim().min(1, "Cor final obrigatoria."),
+  cssPrimary: z.string().trim().min(1, "CSS primaria obrigatoria."),
+  cssSecondary: z.string().trim().min(1, "CSS secundaria obrigatoria."),
+  cssAccent: z.string().trim().min(1, "CSS de destaque obrigatoria."),
+  confirmLabel: z.string().trim().min(1, "Texto do botao obrigatorio."),
+  successTitle: z.string().trim().min(1, "Titulo de sucesso obrigatorio."),
+  successSub: z.string().trim().min(1, "Subtitulo de sucesso obrigatorio."),
+  confettiColors: z.string().trim().min(1, "Informe ao menos uma cor de confete."),
+  photoRecommendation: z.string().trim().min(1, "Recomendacao de foto obrigatoria."),
+  photoPrompt: z.string().trim().min(1, "Prompt de imagem obrigatorio."),
   isActive: z.boolean(),
   displayOrder: z.coerce.number().min(0),
 });
@@ -1244,6 +1244,7 @@ function ThemeCatalogManager({
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<ThemeView | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const form = useForm<ThemeFormValues>({
     resolver: zodResolver(themeFormSchema),
@@ -1258,6 +1259,7 @@ function ThemeCatalogManager({
   const closeEditor = () => {
     setIsOpen(false);
     setEditingTheme(null);
+    setFormError(null);
     form.reset(BLANK_THEME_FORM);
   };
 
@@ -1278,6 +1280,7 @@ function ThemeCatalogManager({
 
   const openNewTheme = () => {
     const nextOrder = Math.max(0, ...themes.map((theme) => theme.displayOrder)) + 10;
+    setFormError(null);
     setEditingTheme(null);
     form.reset({
       ...BLANK_THEME_FORM,
@@ -1288,6 +1291,7 @@ function ThemeCatalogManager({
   };
 
   const openEditTheme = (theme: ThemeView) => {
+    setFormError(null);
     setEditingTheme(theme);
     form.reset(themeToFormDefaults(theme));
     setIsOpen(true);
@@ -1295,6 +1299,7 @@ function ThemeCatalogManager({
 
   const duplicateTheme = (theme: ThemeView) => {
     const nextOrder = Math.max(0, ...themes.map((item) => item.displayOrder)) + 10;
+    setFormError(null);
     setEditingTheme(null);
     form.reset({
       ...themeToFormDefaults(theme, nextOrder),
@@ -1305,14 +1310,21 @@ function ThemeCatalogManager({
     setIsOpen(true);
   };
 
-  const submitTheme = form.handleSubmit((values) => {
-    const payload = themeFormToPayload(values);
-    if (editingTheme?.id) {
-      updateMutation.mutate({ id: editingTheme.id, data: payload as UpdateThemeBody });
-      return;
-    }
-    createMutation.mutate({ data: payload });
-  });
+  const submitTheme = form.handleSubmit(
+    (values) => {
+      setFormError(null);
+      const payload = themeFormToPayload(values);
+      if (editingTheme?.id) {
+        updateMutation.mutate({ id: editingTheme.id, data: payload as UpdateThemeBody });
+        return;
+      }
+      createMutation.mutate({ data: payload });
+    },
+    (errors) => {
+      const firstError = Object.values(errors)[0]?.message;
+      setFormError(typeof firstError === "string" ? firstError : "Verifique os campos obrigatorios.");
+    },
+  );
 
   const toggleTheme = (theme: ThemeView) => {
     if (!theme.id) return;
@@ -1480,6 +1492,9 @@ function ThemeCatalogManager({
 
               {(createMutation.isError || updateMutation.isError) && (
                 <p className="text-sm text-destructive font-bold bg-destructive/10 rounded-xl p-3">Nao foi possivel salvar o tema. Confira slug unico e campos obrigatorios.</p>
+              )}
+              {formError && (
+                <p className="text-sm text-destructive font-bold bg-destructive/10 rounded-xl p-3">{formError}</p>
               )}
 
               <div className="flex items-center justify-end gap-2">
