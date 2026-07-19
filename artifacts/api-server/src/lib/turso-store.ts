@@ -1,4 +1,4 @@
-import { createClient, type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 import { DEFAULT_THEMES } from "@workspace/db/theme-presets";
 import type { EventConfig, Guest, GuestAudit, GuestStatus, Photo, Theme } from "./firebase-store";
 
@@ -190,20 +190,33 @@ function getTursoConfig() {
 }
 
 export class TursoStore {
-  private readonly client: Client;
+  private client: Client | null = null;
+  private clientPromise: Promise<Client> | null = null;
   private initialized = false;
   private state: TursoState | null = null;
 
-  constructor() {
-    const config = getTursoConfig();
-    this.client = createClient({ url: config.url, authToken: config.authToken });
+  private async ensureClient(): Promise<Client> {
+    if (this.client) return this.client;
+
+    if (!this.clientPromise) {
+      this.clientPromise = (async () => {
+        const config = getTursoConfig();
+        const { createClient } = await import("@libsql/client");
+        const client = createClient({ url: config.url, authToken: config.authToken });
+        this.client = client;
+        return client;
+      })();
+    }
+
+    return this.clientPromise;
   }
 
   private async ensureLoaded(): Promise<TursoState> {
     if (this.state) return this.state;
+    const client = await this.ensureClient();
 
     if (!this.initialized) {
-      await this.client.execute(`
+      await client.execute(`
         CREATE TABLE IF NOT EXISTS app_state (
           id INTEGER PRIMARY KEY CHECK (id = 1),
           payload TEXT NOT NULL,
@@ -213,7 +226,7 @@ export class TursoStore {
       this.initialized = true;
     }
 
-    const result = await this.client.execute("SELECT payload FROM app_state WHERE id = 1");
+    const result = await client.execute("SELECT payload FROM app_state WHERE id = 1");
     const row = result.rows[0];
     if (!row) {
       this.state = defaultState();
@@ -228,9 +241,10 @@ export class TursoStore {
 
   private async persistState(): Promise<void> {
     if (!this.state) return;
+    const client = await this.ensureClient();
 
     const payload = JSON.stringify(this.state);
-    await this.client.execute({
+    await client.execute({
       sql: `
         INSERT INTO app_state (id, payload, updated_at)
         VALUES (1, ?, ?)
