@@ -42,8 +42,9 @@ router.post("/admin/login", loginLimiter, async (req, res): Promise<void> => {
 
   const adminPassword = process.env["ADMIN_PASSWORD"];
   const jwtSecret = process.env["JWT_SECRET"]!;
+  const password = parsed.data.password.trim();
 
-  if (!adminPassword || parsed.data.password !== adminPassword) {
+  if (!adminPassword || password !== adminPassword.trim()) {
     res.status(401).json({ error: "Senha incorreta" });
     return;
   }

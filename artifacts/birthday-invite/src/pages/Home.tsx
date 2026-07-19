@@ -427,7 +427,10 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
               <div className="flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /><span className="font-bold text-sm">Área do Organizador</span></div>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
             </div>
-            <form onSubmit={form.handleSubmit((d) => mutation.mutate({ data: d }))} className="space-y-3">
+            <form
+              onSubmit={form.handleSubmit((d) => mutation.mutate({ data: { password: d.password.trim() } }))}
+              className="space-y-3"
+            >
               <Input type="password" {...form.register("password")} placeholder="Senha de acesso"
                 className="h-11 rounded-xl text-center tracking-widest bg-muted/30" autoFocus />
               {mutation.isError && <p className="text-destructive text-xs text-center font-medium">{(mutation.error as any)?.error ?? "Senha incorreta."}</p>}

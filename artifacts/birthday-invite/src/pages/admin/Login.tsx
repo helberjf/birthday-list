@@ -30,7 +30,7 @@ export default function AdminLogin() {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate({ data });
+    loginMutation.mutate({ data: { password: data.password.trim() } });
   };
 
   return (
