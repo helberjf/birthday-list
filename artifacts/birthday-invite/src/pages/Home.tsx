@@ -410,6 +410,20 @@ function QRModal({ open, onClose, url, childName }: { open: boolean; onClose: ()
 
 /* ── Admin Login Drawer ─────────────────────────────── */
 const loginSchema = z.object({ password: z.string().min(1) });
+
+function getLoginErrorMessage(error: unknown): string {
+  if (error && typeof error === "object") {
+    const topLevel = (error as { error?: unknown }).error;
+    if (typeof topLevel === "string" && topLevel.trim()) return topLevel;
+
+    const data = (error as { data?: { error?: unknown; message?: unknown } }).data;
+    if (typeof data?.error === "string" && data.error.trim()) return data.error;
+    if (typeof data?.message === "string" && data.message.trim()) return data.message;
+  }
+
+  return "Senha incorreta.";
+}
+
 function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { login } = useAuth();
   const form = useForm<{ password: string }>({ resolver: zodResolver(loginSchema), defaultValues: { password: "" } });
@@ -433,7 +447,9 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
             >
               <Input type="password" {...form.register("password")} placeholder="Senha de acesso"
                 className="h-11 rounded-xl text-center tracking-widest bg-muted/30" autoFocus />
-              {mutation.isError && <p className="text-destructive text-xs text-center font-medium">{(mutation.error as any)?.error ?? "Senha incorreta."}</p>}
+              {mutation.isError && (
+                <p className="text-destructive text-xs text-center font-medium">{getLoginErrorMessage(mutation.error)}</p>
+              )}
               <button type="submit" disabled={mutation.isPending}
                 className="w-full bg-primary text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
                 {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Entrar"}

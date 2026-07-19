@@ -13,6 +13,19 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+function getLoginErrorMessage(error: unknown): string {
+  if (error && typeof error === "object") {
+    const topLevel = (error as { error?: unknown }).error;
+    if (typeof topLevel === "string" && topLevel.trim()) return topLevel;
+
+    const data = (error as { data?: { error?: unknown; message?: unknown } }).data;
+    if (typeof data?.error === "string" && data.error.trim()) return data.error;
+    if (typeof data?.message === "string" && data.message.trim()) return data.message;
+  }
+
+  return "Senha incorreta.";
+}
+
 export default function AdminLogin() {
   const { login } = useAuth();
   
@@ -67,7 +80,7 @@ export default function AdminLogin() {
 
           {loginMutation.isError && (
             <p className="text-center text-destructive text-sm font-medium bg-destructive/10 p-3 rounded-lg">
-              {(loginMutation.error as any)?.error || "Senha incorreta."}
+              {getLoginErrorMessage(loginMutation.error)}
             </p>
           )}
         </form>
