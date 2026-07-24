@@ -41,7 +41,7 @@ const rsvpSchema = z.object({
 type RsvpFormValues = z.infer<typeof rsvpSchema>;
 
 const statusConfig = {
-  confirmed: { label: "Vou sim! ⚔️",  color: "bg-secondary text-white border-secondary", icon: CheckCircle2 },
+  confirmed: { label: "Vou sim! 💖",  color: "bg-secondary text-white border-secondary", icon: CheckCircle2 },
   maybe:     { label: "Talvez 🤔",     color: "bg-accent text-foreground border-accent",  icon: HelpCircle },
   declined:  { label: "Não vou 💔",    color: "bg-destructive text-white border-destructive", icon: XCircle },
 };
@@ -110,19 +110,19 @@ function getTheme(id?: string | null) {
 }
 
 const DEFAULT_EVENT = {
-  childName: "Bento", age: "5",
-  dateLabel: "15/04/2026", dateFull: "Quarta-feira, 15 de Abril de 2026",
-  timeLabel: "18h00 às 22h00", location: "Rua Luz Interior, 120",
-  neighborhood: "Estrela Sul — Serelepe",
-  tagline: "Venha se divertir, jogar, dar risada e fazer parte dessa missão especial!",
+  childName: "Julia", age: "5",
+  dateLabel: "16/08/2026", dateFull: "Domingo, 16 de agosto de 2026",
+  timeLabel: "13:00 às 18:00", location: "Av Rio Pardo, 4195",
+  neighborhood: "Cidade Universitária - Ribeirão Preto",
+  tagline: "Venha viver uma tarde de piscina, brincadeiras e muita alegria!",
   inviteImageUrl: null as string | null | undefined,
-  heroBgFrom: "#1a6b2a", heroBgVia: "#2d8a40", heroBgTo: "#4caf50",
+  heroBgFrom: "#4b1238", heroBgVia: "#b91d73", heroBgTo: "#f7a8cd",
   musicUrl: null as string | null | undefined,
   galleryEnabled: false,
   galleryTitle: "Fotos da Festa 📸",
-  theme: "minecraft" as string,
+  theme: "princesas" as string,
   spotifyPlaylistUrl: null as string | null | undefined,
-  mapsUrl: null as string | null | undefined,
+  mapsUrl: "https://maps.app.goo.gl/yjUt5rZNPGpfYyfa7?g_st=iw" as string | null | undefined,
   whatsappReminderEnabled: false,
   whatsappReminderDaysBefore: "3",
 };
@@ -131,7 +131,7 @@ function parseEventDate(dateLabel: string, timeLabel: string): Date | null {
   const parts = dateLabel.split("/");
   if (parts.length !== 3) return null;
   const [day, month, year] = parts.map(Number);
-  const hourMatch = timeLabel.match(/(\d+)h(\d{2})/);
+  const hourMatch = timeLabel.match(/(\d+)(?:h|:)(\d{2})/);
   const hours = hourMatch ? Number(hourMatch[1]) : 18;
   const mins  = hourMatch ? Number(hourMatch[2]) : 0;
   const d = new Date(year, month - 1, day, hours, mins);
@@ -465,7 +465,7 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 /* ── Hero ───────────────────────────────────────────── */
 function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
   const [adminOpen, setAdminOpen] = useState(false);
-  const imageUrl = event.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite.jpeg`;
+  const imageUrl = event.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite-julia.png`;
   return (
     <section className="relative flex flex-col items-center justify-start overflow-hidden pt-8 pb-0"
       style={{ background: `linear-gradient(to bottom, ${event.heroBgFrom}, ${event.heroBgVia}, ${event.heroBgTo})` }}>
@@ -502,7 +502,7 @@ function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
           <motion.span className="absolute inset-0 pointer-events-none"
             style={{ background: "linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%)", transform: "skewX(-15deg)" }}
             animate={{ x: ["-120%", "140%"] }} transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.2 }} />
-          <span className="relative px-6 py-4 flex items-center justify-center gap-2">⚔️ CONFIRMAR PRESENÇA</span>
+          <span className="relative px-6 py-4 flex items-center justify-center gap-2">💖 CONFIRMAR PRESENÇA</span>
         </motion.button>
         <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 0.9, repeat: Infinity }}
           className="text-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
@@ -735,7 +735,7 @@ function GuestListSection() {
         {stats && (
           <div className="bg-primary rounded-2xl overflow-hidden shadow-lg border-2 border-primary/60">
             <div className="px-5 pt-4 pb-2 text-center">
-              <h2 className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">🎮 Aventureiros Confirmados</h2>
+              <h2 className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">💖 Convidados Confirmados</h2>
             </div>
             <div className="grid grid-cols-3 gap-px bg-white/20 mx-3 mb-4 rounded-xl overflow-hidden">
               {[
