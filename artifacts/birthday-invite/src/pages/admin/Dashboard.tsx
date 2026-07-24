@@ -906,16 +906,20 @@ function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageMode, setImageMode] = useState<"url" | "upload">("url");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const DEFAULT_IMG = `${import.meta.env.BASE_URL}images/convite.jpeg`;
+  const DEFAULT_IMG = `${import.meta.env.BASE_URL}images/convite-julia.jpg`;
 
   const form = useForm<ConfigValues>({
     resolver: zodResolver(configSchema),
     defaultValues: {
-      childName: "", age: "", dateLabel: "", dateFull: "", timeLabel: "",
-      location: "", neighborhood: "", tagline: "",
-      inviteImageUrl: null, heroBgFrom: "#1a6b2a", heroBgVia: "#2d8a40", heroBgTo: "#4caf50",
+      childName: "Julia", age: "5", dateLabel: "16/08/2026", dateFull: "Domingo, 16 de agosto de 2026", timeLabel: "13:00 às 18:00",
+      location: "Av Rio Pardo, 4195", neighborhood: "Cidade Universitária - Ribeirão Preto", tagline: "Venha viver uma tarde de piscina, brincadeiras e muita alegria!",
+      inviteImageUrl: null, heroBgFrom: "#4b1238", heroBgVia: "#b91d73", heroBgTo: "#f7a8cd",
       musicUrl: null, galleryEnabled: false, galleryTitle: "Fotos da Festa 📸",
-      theme: "minecraft",
+      theme: "princesas",
+      spotifyPlaylistUrl: "https://open.spotify.com/artist/5jTK9ytb8AJCl28jku90Rv",
+      mapsUrl: "https://maps.app.goo.gl/yjUt5rZNPGpfYyfa7?g_st=iw",
+      whatsappReminderEnabled: false,
+      whatsappReminderDaysBefore: "3",
     },
   });
 

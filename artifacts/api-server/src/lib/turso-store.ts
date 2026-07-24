@@ -76,7 +76,7 @@ const DEFAULT_EVENT_CONFIG: EventConfig = {
   galleryEnabled: false,
   galleryTitle: "Fotos da Festa",
   theme: "princesas",
-  spotifyPlaylistUrl: null,
+  spotifyPlaylistUrl: "https://open.spotify.com/artist/5jTK9ytb8AJCl28jku90Rv",
   mapsUrl: "https://maps.app.goo.gl/yjUt5rZNPGpfYyfa7?g_st=iw",
   whatsappReminderEnabled: false,
   whatsappReminderDaysBefore: "3",
