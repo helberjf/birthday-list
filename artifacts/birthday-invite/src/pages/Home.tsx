@@ -121,7 +121,7 @@ const DEFAULT_EVENT = {
   galleryEnabled: false,
   galleryTitle: "Fotos da Festa 📸",
   theme: "princesas" as string,
-  spotifyPlaylistUrl: null as string | null | undefined,
+  spotifyPlaylistUrl: "https://open.spotify.com/artist/5jTK9ytb8AJCl28jku90Rv" as string | null | undefined,
   mapsUrl: "https://maps.app.goo.gl/yjUt5rZNPGpfYyfa7?g_st=iw" as string | null | undefined,
   whatsappReminderEnabled: false,
   whatsappReminderDaysBefore: "3",
@@ -465,7 +465,7 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 /* ── Hero ───────────────────────────────────────────── */
 function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
   const [adminOpen, setAdminOpen] = useState(false);
-  const imageUrl = event.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite-julia.png`;
+  const imageUrl = event.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite-julia.jpg`;
   return (
     <section className="relative flex flex-col items-center justify-start overflow-hidden pt-8 pb-0"
       style={{ background: `linear-gradient(to bottom, ${event.heroBgFrom}, ${event.heroBgVia}, ${event.heroBgTo})` }}>
