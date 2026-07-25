@@ -7,7 +7,6 @@ import uploadRouter from "./upload";
 import photosRouter from "./photos";
 import whatsappRouter from "./whatsapp";
 import themesRouter from "./themes";
-import diagnosticsRouter from "./diagnostics";
 
 const router: IRouter = Router();
 
@@ -19,6 +18,5 @@ router.use(uploadRouter);
 router.use(photosRouter);
 router.use(whatsappRouter);
 router.use(themesRouter);
-router.use(diagnosticsRouter);
 
 export default router;
