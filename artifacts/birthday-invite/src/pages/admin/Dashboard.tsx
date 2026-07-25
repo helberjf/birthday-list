@@ -92,6 +92,17 @@ function buildWhatsAppUrl(phone: string, name: string, event: { dateLabel: strin
   return `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
 }
 
+function isUnauthorizedError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const status = (error as { status?: unknown }).status;
+  return status === 401 || status === 403;
+}
+
+function useAdminAuthExpiry(error: unknown, logout: () => void) {
+  useEffect(() => {
+    if (isUnauthorizedError(error)) logout();
+  }, [error, logout]);
+}
 /* ── Export helpers ─────────────────────────────────── */
 function guestRow(g: Guest) {
   return {
@@ -173,7 +184,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {activeTab === "guests" && <><StatsGrid authHeaders={authHeaders} /><GuestManager authHeaders={authHeaders} /></>}
+        {activeTab === "guests" && <><StatsGrid authHeaders={authHeaders} logout={logout} /><GuestManager authHeaders={authHeaders} logout={logout} /></>}
         {activeTab === "gallery" && <GalleryManager authHeaders={authHeaders} />}
         {activeTab === "reminders" && <MassReminder authHeaders={authHeaders} />}
         {activeTab === "audit" && <AuditLog authHeaders={authHeaders} />}
@@ -184,8 +195,9 @@ export default function AdminDashboard() {
 }
 
 /* ── Stats Grid ─────────────────────────────────────── */
-function StatsGrid({ authHeaders }: { authHeaders: Record<string, string> }) {
-  const { data: stats, isLoading } = useGetAdminStats({ request: authHeaders });
+function StatsGrid({ authHeaders, logout }: { authHeaders: Record<string, string>; logout: () => void }) {
+  const { data: stats, isLoading, error: statsError } = useGetAdminStats({ request: authHeaders });
+  useAdminAuthExpiry(statsError, logout);
   if (isLoading) return <div className="h-24 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   if (!stats) return null;
   const cards = [
@@ -213,7 +225,7 @@ function StatsGrid({ authHeaders }: { authHeaders: Record<string, string> }) {
 }
 
 /* ── Guest Manager ──────────────────────────────────── */
-function GuestManager({ authHeaders }: { authHeaders: Record<string, string> }) {
+function GuestManager({ authHeaders, logout }: { authHeaders: Record<string, string>; logout: () => void }) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -225,10 +237,11 @@ function GuestManager({ authHeaders }: { authHeaders: Record<string, string> }) 
 
   useEffect(() => { const t = setTimeout(() => setDebouncedSearch(search), 300); return () => clearTimeout(t); }, [search]);
 
-  const { data, isLoading } = useListGuests(
+  const { data, isLoading, error: guestsError } = useListGuests(
     { page, limit: 10, search: debouncedSearch, status: statusFilter || undefined },
     { request: authHeaders },
   );
+  useAdminAuthExpiry(guestsError, logout);
 
   const deleteMutation = useDeleteGuest({
     request: authHeaders,
