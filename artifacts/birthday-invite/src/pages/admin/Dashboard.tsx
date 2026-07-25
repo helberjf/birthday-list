@@ -940,7 +940,7 @@ function EventConfigEditor({ authHeaders }: { authHeaders: Record<string, string
         timeLabel: config.timeLabel, location: config.location, neighborhood: config.neighborhood, tagline: config.tagline,
         inviteImageUrl: config.inviteImageUrl ?? null, heroBgFrom: config.heroBgFrom, heroBgVia: config.heroBgVia, heroBgTo: config.heroBgTo,
         musicUrl: config.musicUrl ?? null, galleryEnabled: config.galleryEnabled, galleryTitle: config.galleryTitle,
-        theme: (config as unknown as Record<string, unknown>).theme as string ?? "minecraft",
+        theme: (config as unknown as Record<string, unknown>).theme as string ?? "emily-vik",
         spotifyPlaylistUrl: (config as unknown as Record<string, unknown>).spotifyPlaylistUrl as string ?? null,
         mapsUrl: (config as unknown as Record<string, unknown>).mapsUrl as string ?? null,
         whatsappReminderEnabled: (config as unknown as Record<string, unknown>).whatsappReminderEnabled as boolean ?? false,

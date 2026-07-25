@@ -11,13 +11,13 @@ import {
   CheckCircle2, HelpCircle, XCircle, Heart, Loader2,
   Baby, UserRound, Plus, Minus, MapPin, Clock, Calendar,
   ChevronDown, ChevronLeft, ChevronRight, Users, Menu, X, Lock,
-  QrCode, Download, Share2, Music2, Pause, Play, ZoomIn,
+  QrCode, Download, Share2, Music2, Pause, ZoomIn,
 } from "lucide-react";
 
 import {
   useCreateGuest, useListGuests, useGetPublicStats,
   useGetEventConfig, useAdminLogin, useListPhotos, useListThemes,
-  getListGuestsQueryKey,
+  getGetPublicStatsQueryKey, getListGuestsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -41,73 +41,10 @@ const rsvpSchema = z.object({
 type RsvpFormValues = z.infer<typeof rsvpSchema>;
 
 const statusConfig = {
-  confirmed: { label: "Vou sim! 💖",  color: "bg-secondary text-white border-secondary", icon: CheckCircle2 },
-  maybe:     { label: "Talvez 🤔",     color: "bg-accent text-foreground border-accent",  icon: HelpCircle },
+  confirmed: { label: "Vou sim! 💖",  color: "party-bg-secondary text-white party-border-primary", icon: CheckCircle2 },
+  maybe:     { label: "Talvez 🤔",     color: "party-bg-accent text-foreground party-border-accent-soft",  icon: HelpCircle },
   declined:  { label: "Não vou 💔",    color: "bg-destructive text-white border-destructive", icon: XCircle },
 };
-
-const THEME_PRESETS = [
-  { id: "minecraft",  name: "Minecraft",     emoji: "⚔️", from: "#1a6b2a", via: "#2d8a40", to: "#4caf50",
-    css: { "--color-primary": "hsl(130 55% 28%)", "--color-secondary": "hsl(122 45% 42%)", "--color-accent": "hsl(42 95% 52%)" },
-    confirmLabel: "⚔️ CONFIRMAR PRESENÇA", successTitle: "Missão Aceita!", successSub: "Nos vemos na festa! 🎮",
-    confetti: ["#4CAF50","#F6C453","#1a6b2a","#ffffff"] },
-  { id: "mario",      name: "Super Mario",   emoji: "🍄", from: "#7B0000", via: "#c62828", to: "#ef9a9a",
-    css: { "--color-primary": "hsl(0 72% 35%)", "--color-secondary": "hsl(48 100% 42%)", "--color-accent": "hsl(48 100% 52%)" },
-    confirmLabel: "⭐ CONFIRMAR PRESENÇA", successTitle: "Wahoo! Presença confirmada!", successSub: "Vamos juntos salvar a princesa! 🍄⭐",
-    confetti: ["#e53935","#FFD700","#1565C0","#43A047"] },
-  { id: "princesas",  name: "Princesas",     emoji: "👸", from: "#4a148c", via: "#880e4f", to: "#f48fb1",
-    css: { "--color-primary": "hsl(300 65% 35%)", "--color-secondary": "hsl(340 80% 55%)", "--color-accent": "hsl(300 40% 75%)" },
-    confirmLabel: "👸 CONFIRMAR PRESENÇA", successTitle: "Você é uma princesa!", successSub: "Será mágico! 💎✨",
-    confetti: ["#E91E63","#9C27B0","#FFF8E1","#FF80AB"] },
-  { id: "futebol",    name: "Futebol",       emoji: "⚽", from: "#1b5e20", via: "#2e7d32", to: "#81c784",
-    css: { "--color-primary": "hsl(123 57% 23%)", "--color-secondary": "hsl(48 100% 35%)", "--color-accent": "hsl(48 100% 52%)" },
-    confirmLabel: "⚽ CONFIRMAR PRESENÇA", successTitle: "GOOOOOL! Confirmado!", successSub: "Você está escalado! 🏆🥇",
-    confetti: ["#2e7d32","#FFEE58","#ffffff","#1565C0"] },
-  { id: "spiderman",  name: "Homem Aranha",  emoji: "🕷️", from: "#7B0000", via: "#c62828", to: "#1a237e",
-    css: { "--color-primary": "hsl(0 100% 32%)", "--color-secondary": "hsl(234 68% 38%)", "--color-accent": "hsl(0 0% 85%)" },
-    confirmLabel: "🕷️ CONFIRMAR PRESENÇA", successTitle: "Com grandes poderes...", successSub: "Vem a festa! 🕸️🕷️",
-    confetti: ["#c62828","#1a237e","#ffffff","#FFD700"] },
-  { id: "roblox",     name: "Roblox",        emoji: "🎮", from: "#7a0000", via: "#cc0000", to: "#ff6666",
-    css: { "--color-primary": "hsl(0 80% 35%)", "--color-secondary": "hsl(0 0% 15%)", "--color-accent": "hsl(0 100% 60%)" },
-    confirmLabel: "🎮 ENTRAR NA FESTA!", successTitle: "Game On! Tô dentro!", successSub: "A festa vai ser épica! 🕹️",
-    confetti: ["#cc0000","#ffffff","#1a1a1a","#ff4444"] },
-  { id: "sonic",      name: "Sonic",         emoji: "⚡", from: "#002266", via: "#0050c8", to: "#6699ff",
-    css: { "--color-primary": "hsl(215 100% 35%)", "--color-secondary": "hsl(42 100% 50%)", "--color-accent": "hsl(42 100% 65%)" },
-    confirmLabel: "⚡ GO FAST! CONFIRMAR", successTitle: "Sonic Speed! Confirmado!", successSub: "Mais rápido que o Sonic! 💨",
-    confetti: ["#0050c8","#FFD700","#cc0000","#ffffff"] },
-  { id: "dinossauro", name: "Dinossauro",    emoji: "🦕", from: "#1b3a1b", via: "#3d6b3d", to: "#8bc34a",
-    css: { "--color-primary": "hsl(120 45% 22%)", "--color-secondary": "hsl(40 70% 45%)", "--color-accent": "hsl(80 65% 50%)" },
-    confirmLabel: "🦕 CONFIRMAR PRESENÇA", successTitle: "ROAR! Presença confirmada!", successSub: "Prepare-se para a era dos dinos! 🦖",
-    confetti: ["#4caf50","#8d6e63","#ffeb3b","#ff7043"] },
-  { id: "sereia",     name: "Sereia",        emoji: "🧜‍♀️", from: "#004d52", via: "#00838f", to: "#80deea",
-    css: { "--color-primary": "hsl(185 85% 28%)", "--color-secondary": "hsl(270 70% 48%)", "--color-accent": "hsl(185 100% 60%)" },
-    confirmLabel: "🧜‍♀️ NADAR ATÉ LÁ!", successTitle: "Mergulhou na festa!", successSub: "Vem nadar conosco! 🐚🌊",
-    confetti: ["#00bcd4","#9c27b0","#4dd0e1","#ffffff"] },
-  { id: "unicornio",  name: "Unicórnio",     emoji: "🦄", from: "#4a148c", via: "#880e4f", to: "#f8bbd9",
-    css: { "--color-primary": "hsl(285 65% 42%)", "--color-secondary": "hsl(330 80% 52%)", "--color-accent": "hsl(47 100% 55%)" },
-    confirmLabel: "🦄 VOAR ATÉ LÁ!", successTitle: "Mágico! Presença confirmada!", successSub: "A magia começa! 🌈✨",
-    confetti: ["#9c27b0","#e91e63","#ffd700","#ffffff"] },
-  { id: "astronauta", name: "Astronauta",    emoji: "🚀", from: "#0a0a2a", via: "#1a237e", to: "#3949ab",
-    css: { "--color-primary": "hsl(230 70% 42%)", "--color-secondary": "hsl(0 0% 70%)", "--color-accent": "hsl(30 100% 55%)" },
-    confirmLabel: "🚀 MISSÃO CONFIRMADA!", successTitle: "Houston, temos festa!", successSub: "Decolar para a diversão! 🌙⭐",
-    confetti: ["#1565c0","#ffffff","#ff6f00","#c0c0c0"] },
-  { id: "pokemon",    name: "Pokémon",       emoji: "⚡", from: "#b71c1c", via: "#e53935", to: "#ffca28",
-    css: { "--color-primary": "hsl(0 85% 38%)", "--color-secondary": "hsl(48 100% 45%)", "--color-accent": "hsl(48 100% 60%)" },
-    confirmLabel: "⚡ ESCOLHO VOCÊ!", successTitle: "Capturado! Confirmado!", successSub: "Vamos todos juntos! Pika! ⚡",
-    confetti: ["#e53935","#ffca28","#1565c0","#ffffff"] },
-  { id: "frozen",     name: "Frozen",        emoji: "❄️", from: "#01579b", via: "#0277bd", to: "#b3e5fc",
-    css: { "--color-primary": "hsl(200 80% 33%)", "--color-secondary": "hsl(195 100% 72%)", "--color-accent": "hsl(200 50% 82%)" },
-    confirmLabel: "❄️ VAMOS CONGELAR!", successTitle: "Let It Go! Confirmado!", successSub: "A magia do gelo te espera! ❄️",
-    confetti: ["#0288d1","#b3e5fc","#ffffff","#546e7a"] },
-  { id: "safari",     name: "Safari",        emoji: "🦁", from: "#4e342e", via: "#795548", to: "#ffca28",
-    css: { "--color-primary": "hsl(25 60% 28%)", "--color-secondary": "hsl(45 80% 48%)", "--color-accent": "hsl(38 100% 58%)" },
-    confirmLabel: "🦁 RUMO À SAVANA!", successTitle: "Safari confirmado!", successSub: "A aventura começa! 🦒🐘",
-    confetti: ["#795548","#ffca28","#f57c00","#4caf50"] },
-] as const;
-type ThemeId = typeof THEME_PRESETS[number]["id"];
-function getTheme(id?: string | null) {
-  return THEME_PRESETS.find(t => t.id === id) ?? THEME_PRESETS[0]!;
-}
 
 const DEFAULT_EVENT = {
   childName: "Julia", age: "5",
@@ -159,17 +96,18 @@ export default function Home() {
   const theme = getThemeBySlug(themeCatalog, EVENT.theme);
   const [qrOpen, setQrOpen] = useState(false);
   const siteUrl = window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, "");
+  const inviteImageUrl = EVENT.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite-julia.jpg`;
 
   useEffect(() => {
     const root = document.documentElement;
     const cssVars = getThemeCssVars(theme);
     Object.entries(cssVars).forEach(([k, v]) => root.style.setProperty(k, v));
     return () => Object.keys(cssVars).forEach(k => root.style.removeProperty(k));
-  }, [theme.cssAccent, theme.cssPrimary, theme.cssSecondary]);
+  }, [theme.cssAccent, theme.cssPrimary, theme.cssSecondary, theme.heroBgFrom, theme.heroBgVia, theme.heroBgTo]);
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
-      <HeroSection event={EVENT} />
+    <div className="min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground">
+      <HeroSection event={EVENT} imageUrl={inviteImageUrl} theme={theme} />
       <CountdownSection event={EVENT} />
       <RsvpSection event={EVENT} theme={theme} />
       <GuestListSection />
@@ -181,38 +119,122 @@ export default function Home() {
           Feito com <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" /> para o {EVENT.childName}
         </p>
         <button onClick={() => setQrOpen(true)}
-          className="inline-flex items-center gap-2 text-primary hover:underline font-bold text-sm">
+          className="inline-flex items-center gap-2 party-text-primary hover:underline font-bold text-sm">
           <QrCode className="w-4 h-4" /> Compartilhar convite (QR Code)
         </button>
       </footer>
 
       <button onClick={() => setQrOpen(true)}
-        className="fixed bottom-6 right-4 z-30 bg-primary text-white shadow-lg rounded-2xl px-4 py-3 flex items-center gap-2 font-bold text-sm hover:bg-primary/90 transition-all hover:scale-105 active:scale-95">
+        className="fixed bottom-6 right-4 z-30 party-bg-primary party-hover-primary text-white shadow-lg rounded-2xl px-4 py-3 flex items-center gap-2 font-bold text-sm transition-all hover:scale-105 active:scale-95">
         <Share2 className="w-4 h-4" /> Compartilhar
       </button>
 
       <MusicPlayer musicUrl={EVENT.musicUrl} />
-      <QRModal open={qrOpen} onClose={() => setQrOpen(false)} url={siteUrl} childName={EVENT.childName} />
+      <QRModal open={qrOpen} onClose={() => setQrOpen(false)} url={siteUrl} childName={EVENT.childName} imageUrl={inviteImageUrl} />
     </div>
   );
 }
 
 /* ── Music Player ────────────────────────────────────── */
+function getYouTubeVideoId(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.replace("/", "");
+    if (parsed.hostname.includes("youtube.com")) {
+      if (parsed.pathname.startsWith("/watch")) return parsed.searchParams.get("v");
+      if (parsed.pathname.startsWith("/embed/") || parsed.pathname.startsWith("/shorts/")) {
+        return parsed.pathname.split("/").filter(Boolean)[1] ?? null;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function getYouTubeEmbedUrl(url?: string | null) {
+  if (!url) return null;
+  const videoId = getYouTubeVideoId(url);
+  if (!videoId) return null;
+  const params = new URLSearchParams({
+    autoplay: "1",
+    loop: "1",
+    playlist: videoId,
+    controls: "0",
+    modestbranding: "1",
+    playsinline: "1",
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
+function YouTubeMusicPlayer({ embedUrl }: { embedUrl: string }) {
+  const [active, setActive] = useState(true);
+
+  const toggle = useCallback(() => {
+    setActive(value => !value);
+  }, []);
+
+  return (
+    <>
+      {active && (
+        <iframe
+          src={embedUrl}
+          title="Música Emilly Vick"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          className="fixed bottom-0 left-0 z-0 h-px w-px opacity-0 pointer-events-none"
+        />
+      )}
+      <motion.button
+        onClick={toggle}
+        initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1 }}
+        className="fixed bottom-6 left-4 z-30 party-bg-primary party-hover-primary text-white shadow-lg rounded-2xl px-4 py-3 flex items-center gap-2 font-bold text-sm transition-all hover:scale-105 active:scale-95 border border-white/10"
+        title={active ? "Parar música Emilly Vick" : "Tocar música Emilly Vick"}>
+        {active ? <Pause className="w-4 h-4 fill-white" /> : <Music2 className="w-4 h-4" />}
+        <span>{active ? "Parar" : "Emilly Vick"}</span>
+        {active && (
+          <span className="flex gap-0.5 items-end h-4">
+            {[0, 1, 2].map(i => (
+              <motion.span key={i} className="w-0.5 party-bg-accent rounded-sm"
+                animate={{ height: ["4px", "12px", "4px"] }}
+                transition={{ duration: 0.6, delay: i * 0.15, repeat: Infinity }} />
+            ))}
+          </span>
+        )}
+      </motion.button>
+    </>
+  );
+}
+
 function MusicPlayer({ musicUrl }: { musicUrl?: string | null }) {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(musicUrl);
 
   useEffect(() => {
-    if (!musicUrl) return;
+    if (!musicUrl || youtubeEmbedUrl) return;
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     const audio = new Audio(musicUrl);
     audio.loop = true;
-    audio.volume = 0.25;
+    audio.volume = 0.35;
     audioRef.current = audio;
-    setPlaying(false);
-    return () => { audio.pause(); };
-  }, [musicUrl]);
+    let cancelled = false;
+    setLoading(true);
+    audio.play()
+      .then(() => {
+        if (!cancelled) setPlaying(true);
+      })
+      .catch(() => {
+        if (!cancelled) setPlaying(false);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      audio.pause();
+    };
+  }, [musicUrl, youtubeEmbedUrl]);
 
   const toggle = useCallback(() => {
     if (!audioRef.current) return;
@@ -229,12 +251,13 @@ function MusicPlayer({ musicUrl }: { musicUrl?: string | null }) {
   }, [playing]);
 
   if (!musicUrl) return null;
+  if (youtubeEmbedUrl) return <YouTubeMusicPlayer embedUrl={youtubeEmbedUrl} />;
 
   return (
     <motion.button
       onClick={toggle}
       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1 }}
-      className="fixed bottom-6 left-4 z-30 bg-[#1a3a1e] text-white shadow-lg rounded-2xl px-4 py-3 flex items-center gap-2 font-bold text-sm hover:bg-[#2d6a35] transition-all hover:scale-105 active:scale-95 border border-white/10"
+      className="fixed bottom-6 left-4 z-30 party-bg-primary party-hover-primary text-white shadow-lg rounded-2xl px-4 py-3 flex items-center gap-2 font-bold text-sm transition-all hover:scale-105 active:scale-95 border border-white/10"
       title={playing ? "Pausar música" : "Tocar música"}>
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> :
         playing ? <Pause className="w-4 h-4 fill-white" /> : <Music2 className="w-4 h-4" />}
@@ -242,7 +265,7 @@ function MusicPlayer({ musicUrl }: { musicUrl?: string | null }) {
       {playing && (
         <span className="flex gap-0.5 items-end h-4">
           {[0, 1, 2].map(i => (
-            <motion.span key={i} className="w-0.5 bg-accent rounded-sm"
+            <motion.span key={i} className="w-0.5 party-bg-accent rounded-sm"
               animate={{ height: ["4px", "12px", "4px"] }}
               transition={{ duration: 0.6, delay: i * 0.15, repeat: Infinity }} />
           ))}
@@ -274,10 +297,10 @@ function GallerySection({ event }: { event: typeof DEFAULT_EVENT }) {
   }, [lightboxIdx]);
 
   return (
-    <section className="py-10 px-4 bg-gradient-to-b from-background to-[#e8f5e9]">
+    <section className="py-10 px-4 party-gradient-soft-reverse">
       <div className="max-w-lg mx-auto">
         <div className="mb-6 text-center">
-          <div className="inline-block bg-primary px-6 py-2 rounded-xl">
+          <div className="inline-block party-bg-primary px-6 py-2 rounded-xl">
             <h2 className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">
               {event.galleryTitle}
             </h2>
@@ -349,7 +372,7 @@ function GallerySection({ event }: { event: typeof DEFAULT_EVENT }) {
 }
 
 /* ── QR Code Modal ──────────────────────────────────── */
-function QRModal({ open, onClose, url, childName }: { open: boolean; onClose: () => void; url: string; childName: string }) {
+function QRModal({ open, onClose, url, childName, imageUrl }: { open: boolean; onClose: () => void; url: string; childName: string; imageUrl: string }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const handleDownload = useCallback(() => {
     const canvas = canvasRef.current?.querySelector("canvas");
@@ -379,14 +402,14 @@ function QRModal({ open, onClose, url, childName }: { open: boolean; onClose: ()
               initial={{ scale: 0.85, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85, y: 20 }}
               onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-xl text-primary">QR Code do Convite</h3>
+                <h3 className="font-display text-xl party-text-primary">QR Code do Convite</h3>
                 <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
               </div>
               <p className="text-xs text-muted-foreground mb-4">Escaneie para abrir o convite no celular</p>
               <div ref={canvasRef} className="flex justify-center mb-4">
-                <div className="p-3 border-4 border-primary rounded-2xl bg-white">
+                <div className="p-3 border-4 party-border-primary rounded-2xl bg-white">
                   <QRCodeCanvas value={url} size={180} includeMargin={false}
-                    imageSettings={{ src: `${import.meta.env.BASE_URL}images/convite.jpeg`, excavate: true, width: 36, height: 36 }} />
+                    imageSettings={{ src: imageUrl, excavate: true, width: 36, height: 36 }} />
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground mb-4 break-all">{url}</p>
@@ -396,7 +419,7 @@ function QRModal({ open, onClose, url, childName }: { open: boolean; onClose: ()
                   <Download className="w-4 h-4" /> Baixar
                 </button>
                 <button onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+                  className="flex-1 flex items-center justify-center gap-2 party-bg-primary party-hover-primary text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
                   <Share2 className="w-4 h-4" /> Compartilhar
                 </button>
               </div>
@@ -438,7 +461,7 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
             initial={{ opacity: 0, scale: 0.85, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.85, y: -10 }}
             transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /><span className="font-bold text-sm">Área do Organizador</span></div>
+              <div className="flex items-center gap-2"><Lock className="w-4 h-4 party-text-primary" /><span className="font-bold text-sm">Área do Organizador</span></div>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
             </div>
             <form
@@ -451,7 +474,7 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
                 <p className="text-destructive text-xs text-center font-medium">{getLoginErrorMessage(mutation.error)}</p>
               )}
               <button type="submit" disabled={mutation.isPending}
-                className="w-full bg-primary text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+                className="w-full party-bg-primary party-hover-primary text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
                 {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Entrar"}
               </button>
             </form>
@@ -463,18 +486,17 @@ function AdminLoginDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 }
 
 /* ── Hero ───────────────────────────────────────────── */
-function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
+function HeroSection({ event, imageUrl, theme }: { event: typeof DEFAULT_EVENT; imageUrl: string; theme: ThemeView }) {
   const [adminOpen, setAdminOpen] = useState(false);
-  const imageUrl = event.inviteImageUrl || `${import.meta.env.BASE_URL}images/convite-julia.jpg`;
   return (
     <section className="relative flex flex-col items-center justify-start overflow-hidden pt-8 pb-0"
-      style={{ background: `linear-gradient(to bottom, ${event.heroBgFrom}, ${event.heroBgVia}, ${event.heroBgTo})` }}>
+      style={{ background: `linear-gradient(to bottom, ${theme.heroBgFrom}, ${theme.heroBgVia}, ${theme.heroBgTo})` }}>
       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
         backgroundImage: `repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#000 0,#000 1px,transparent 1px,transparent 32px)`,
       }} />
-      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#87CEEB]/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
       <div className="absolute bottom-0 left-0 right-0 h-8"
-        style={{ backgroundImage: `repeating-linear-gradient(90deg, #8B6914 0px, #8B6914 32px, #7a5c10 32px, #7a5c10 64px)` }} />
+        style={{ backgroundImage: "repeating-linear-gradient(90deg, var(--color-accent) 0px, var(--color-accent) 32px, var(--color-secondary) 32px, var(--color-secondary) 64px)" }} />
       <button onClick={() => setAdminOpen(true)}
         className="absolute top-3 right-3 z-20 w-9 h-9 bg-black/25 hover:bg-black/40 backdrop-blur-sm rounded-lg flex items-center justify-center transition-colors">
         <Menu className="w-5 h-5 text-white" />
@@ -487,7 +509,7 @@ function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
       </motion.div>
       <motion.div initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6, type: "spring", bounce: 0.3 }} className="relative z-10 w-full max-w-sm sm:max-w-md px-4">
-        <div className="glow-border rounded-2xl overflow-hidden border-4 border-accent shadow-2xl">
+        <div className="glow-border rounded-2xl overflow-hidden border-4 party-border-accent-soft shadow-2xl">
           <img src={imageUrl} alt={`Convite de ${event.childName}`} className="w-full h-auto object-contain block" />
         </div>
       </motion.div>
@@ -498,14 +520,14 @@ function HeroSection({ event }: { event: typeof DEFAULT_EVENT }) {
           animate={{ y: [0, -7, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
           whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
           className="relative w-full overflow-hidden rounded-2xl font-display text-xl sm:text-2xl text-foreground select-none cursor-pointer"
-          style={{ background: "linear-gradient(180deg,#FFD54F 0%,#FFA000 100%)", boxShadow: "inset 0 -5px 0 0 rgba(0,0,0,0.35), 0 5px 0 0 rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.3)", textShadow: "1px 2px 0 rgba(0,0,0,0.35)" }}>
+          style={{ background: "linear-gradient(180deg, var(--color-accent) 0%, var(--color-secondary) 100%)", boxShadow: "inset 0 -5px 0 0 rgba(0,0,0,0.35), 0 5px 0 0 rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.3)", textShadow: "1px 2px 0 rgba(0,0,0,0.35)" }}>
           <motion.span className="absolute inset-0 pointer-events-none"
             style={{ background: "linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%)", transform: "skewX(-15deg)" }}
             animate={{ x: ["-120%", "140%"] }} transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.2 }} />
-          <span className="relative px-6 py-4 flex items-center justify-center gap-2">💖 CONFIRMAR PRESENÇA</span>
+          <span className="relative px-6 py-4 flex items-center justify-center gap-2">{theme.confirmLabel}</span>
         </motion.button>
         <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 0.9, repeat: Infinity }}
-          className="text-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+          className="party-text-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
           <ChevronDown className="w-7 h-7 stroke-[3]" />
         </motion.div>
       </motion.div>
@@ -530,9 +552,9 @@ function CountdownSection({ event }: { event: typeof DEFAULT_EVENT }) {
     { label: "Segundos", value: timeLeft.seconds },
   ];
   return (
-    <section className="py-8 px-4 bg-gradient-to-b from-[#1a3a1e] to-[#1e4a22]">
+    <section className="py-8 px-4 party-gradient-strong">
       <div className="max-w-lg mx-auto text-center">
-        <p className="text-accent font-display text-xl sm:text-2xl mb-4 drop-shadow-[1px_1px_0_rgba(0,0,0,0.5)]">
+        <p className="party-text-accent font-display text-xl sm:text-2xl mb-4 drop-shadow-[1px_1px_0_rgba(0,0,0,0.5)]">
           {timeLeft.ended ? "🎉 A festa chegou!" : "⏱️ FALTAM PARA A FESTA"}
         </p>
         {timeLeft.ended ? (
@@ -542,7 +564,7 @@ function CountdownSection({ event }: { event: typeof DEFAULT_EVENT }) {
             {units.map(({ label, value }) => (
               <div key={label} className="flex flex-col items-center">
                 <div className="w-full aspect-square sm:w-16 sm:h-16 flex items-center justify-center rounded-xl sm:rounded-2xl border-b-4 border-black/30"
-                  style={{ background: "linear-gradient(180deg, #5a8a35 0%, #3d6324 100%)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.15), 0 4px 8px rgba(0,0,0,0.4)" }}>
+                  style={{ background: "linear-gradient(180deg, var(--color-secondary) 0%, var(--color-primary) 100%)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.15), 0 4px 8px rgba(0,0,0,0.4)" }}>
                   <span className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_2px_0_rgba(0,0,0,0.5)]">
                     {String(value).padStart(2, "0")}
                   </span>
@@ -570,7 +592,7 @@ function CounterField({ label, icon: Icon, value, onChange, min = 0, accentClass
           className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-border transition-colors active:scale-90"><Minus className="w-4 h-4" /></button>
         <span className="w-6 text-center font-display text-2xl">{value}</span>
         <button type="button" onClick={() => onChange(value + 1)}
-          className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors active:scale-90"><Plus className="w-4 h-4 text-white" /></button>
+          className="w-8 h-8 rounded-lg party-bg-primary party-hover-primary flex items-center justify-center transition-colors active:scale-90"><Plus className="w-4 h-4 text-white" /></button>
       </div>
     </div>
   );
@@ -595,6 +617,7 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
         setSubmittedName(form.getValues("parentName"));
         setIsSuccess(true);
         queryClient.invalidateQueries({ queryKey: getListGuestsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetPublicStatsQueryKey() });
         const end = Date.now() + 3000;
         const rand = (a: number, b: number) => Math.random() * (b - a) + a;
         const colors = [...activeTheme.confettiColors];
@@ -616,29 +639,29 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
     <section id="rsvp-section" className="py-10 px-4 bg-background">
       <div className="max-w-lg mx-auto">
         <div className="mb-6 text-center">
-          <div className="inline-block bg-primary px-6 py-2 rounded-t-xl">
+          <div className="inline-block party-bg-primary px-6 py-2 rounded-t-xl">
             <h2 className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">📋 Lista de Presença</h2>
           </div>
-          <div className="bg-secondary/20 border border-secondary/30 rounded-b-xl rounded-tr-xl px-4 py-3">
+          <div className="party-bg-secondary-soft border party-border-secondary-soft rounded-b-xl rounded-tr-xl px-4 py-3">
             <div className="flex flex-col gap-1.5 text-sm font-medium text-foreground/80">
-              <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-accent shrink-0" />{event.dateFull}</span>
-              <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-accent shrink-0" />{event.timeLabel}</span>
-              <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-accent shrink-0" />{event.location} — {event.neighborhood}</span>
+              <span className="flex items-center gap-2"><Calendar className="w-4 h-4 party-text-accent shrink-0" />{event.dateFull}</span>
+              <span className="flex items-center gap-2"><Clock className="w-4 h-4 party-text-accent shrink-0" />{event.timeLabel}</span>
+              <span className="flex items-center gap-2"><MapPin className="w-4 h-4 party-text-accent shrink-0" />{event.location} — {event.neighborhood}</span>
             </div>
           </div>
         </div>
         <div className="bg-card border-2 border-border rounded-2xl shadow-lg overflow-hidden">
-          <div className="h-3 bg-gradient-to-r from-secondary via-[#5dc760] to-secondary" />
+          <div className="h-3" style={{ background: "linear-gradient(to right, var(--color-secondary), var(--color-accent), var(--color-secondary))" }} />
           <div className="p-5 sm:p-7">
             <AnimatePresence mode="wait">
               {isSuccess ? (
                 <motion.div key="ok" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-8 flex flex-col items-center gap-4">
-                  <div className="w-20 h-20 bg-secondary/20 rounded-full flex items-center justify-center text-4xl">
+                  <div className="w-20 h-20 party-bg-secondary-soft rounded-full flex items-center justify-center text-4xl">
                     {activeTheme.emoji}
                   </div>
                   <div>
-                    <h3 className="text-3xl font-display text-primary">{activeTheme.successTitle}</h3>
+                    <h3 className="text-3xl font-display party-text-primary">{activeTheme.successTitle}</h3>
                     <p className="text-muted-foreground text-sm mt-1">
                       {submittedName ? `Olá, ${submittedName}! ` : ""}{activeTheme.successSub}
                     </p>
@@ -648,7 +671,7 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     Compartilhar no WhatsApp
                   </a>
-                  <button onClick={() => { setIsSuccess(false); form.reset(); }} className="text-primary font-bold hover:underline text-sm">
+                  <button onClick={() => { setIsSuccess(false); form.reset(); }} className="party-text-primary font-bold hover:underline text-sm">
                     Registrar outro convidado
                   </button>
                 </motion.div>
@@ -656,13 +679,13 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
                 <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <div className="space-y-1">
-                    <Label className="text-sm font-bold flex items-center gap-1.5"><UserRound className="w-4 h-4 text-primary" /> Seu nome (responsável) *</Label>
+                    <Label className="text-sm font-bold flex items-center gap-1.5"><UserRound className="w-4 h-4 party-text-primary" /> Seu nome (responsável) *</Label>
                     <Input {...form.register("parentName")} className="h-12 rounded-xl bg-background text-base" placeholder="Ex: Maria Silva" autoComplete="name" />
                     {form.formState.errors.parentName && <p className="text-destructive text-xs">{form.formState.errors.parentName.message}</p>}
                   </div>
                   <div className="space-y-1">
                     <Label className="text-sm font-bold flex items-center gap-1.5">
-                      <Baby className="w-4 h-4 text-secondary" /> Nome da criança <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>
+                      <Baby className="w-4 h-4 party-text-secondary" /> Nome da criança <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>
                     </Label>
                     <Input {...form.register("childName")} className="h-12 rounded-xl bg-background text-base" placeholder="Deixe vazio se vier sem criança" />
                   </div>
@@ -677,8 +700,8 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-bold">Quantas pessoas virão?</Label>
-                    <CounterField label="Adultos" icon={UserRound} value={adultsCount} onChange={v => form.setValue("adultsCount", v, { shouldValidate: true })} min={1} accentClass="text-primary" />
-                    <CounterField label="Crianças" icon={Baby} value={childrenCount} onChange={v => form.setValue("childrenCount", v, { shouldValidate: true })} min={0} accentClass="text-secondary" />
+                    <CounterField label="Adultos" icon={UserRound} value={adultsCount} onChange={v => form.setValue("adultsCount", v, { shouldValidate: true })} min={1} accentClass="party-text-primary" />
+                    <CounterField label="Crianças" icon={Baby} value={childrenCount} onChange={v => form.setValue("childrenCount", v, { shouldValidate: true })} min={0} accentClass="party-text-secondary" />
                     <p className="text-xs text-center text-muted-foreground">Total: <strong>{adultsCount + childrenCount}</strong> {adultsCount + childrenCount === 1 ? "pessoa" : "pessoas"}</p>
                   </div>
                   <div className="space-y-2">
@@ -703,7 +726,7 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
                     <Textarea {...form.register("notes")} className="min-h-[80px] rounded-xl bg-background text-base resize-none" placeholder="Escreva aqui..." />
                   </div>
                   <button type="submit" disabled={mutation.isPending}
-                    className="btn-mc w-full bg-secondary text-white py-4 rounded-xl font-display text-xl sm:text-2xl mt-2 flex items-center justify-center gap-2">
+                    className="btn-mc w-full party-bg-secondary text-white py-4 rounded-xl font-display text-xl sm:text-2xl mt-2 flex items-center justify-center gap-2">
                     {mutation.isPending ? <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</> : activeTheme.confirmLabel}
                   </button>
                   {mutation.isError && (
@@ -715,7 +738,7 @@ function RsvpSection({ event, theme }: { event: typeof DEFAULT_EVENT; theme: The
               )}
             </AnimatePresence>
           </div>
-          <div className="h-5" style={{ backgroundImage: "repeating-linear-gradient(90deg,#8B6914 0px,#8B6914 20px,#7a5c10 20px,#7a5c10 40px)" }} />
+          <div className="h-5" style={{ backgroundImage: "repeating-linear-gradient(90deg, var(--color-accent) 0px, var(--color-accent) 20px, var(--color-secondary) 20px, var(--color-secondary) 40px)" }} />
         </div>
       </div>
     </section>
@@ -727,23 +750,23 @@ function GuestListSection() {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useListGuests({ page, limit: 6, status: "confirmed" });
   const { data: stats } = useGetPublicStats();
-  if (isLoading) return <div className="py-12 text-center"><Loader2 className="w-7 h-7 animate-spin text-primary mx-auto" /></div>;
+  if (isLoading) return <div className="py-12 text-center"><Loader2 className="w-7 h-7 animate-spin party-text-primary mx-auto" /></div>;
   if (!data || data.items.length === 0) return null;
   return (
-    <section className="py-10 px-4 bg-gradient-to-b from-[#e8f5e9] to-background">
+    <section className="py-10 px-4 party-gradient-soft">
       <div className="max-w-lg mx-auto space-y-6">
         {stats && (
-          <div className="bg-primary rounded-2xl overflow-hidden shadow-lg border-2 border-primary/60">
+          <div className="party-bg-primary rounded-2xl overflow-hidden shadow-lg border-2 party-border-primary-soft">
             <div className="px-5 pt-4 pb-2 text-center">
               <h2 className="font-display text-2xl sm:text-3xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">💖 Convidados Confirmados</h2>
             </div>
             <div className="grid grid-cols-3 gap-px bg-white/20 mx-3 mb-4 rounded-xl overflow-hidden">
               {[
-                { icon: Users,     val: stats.totalPeople,   label: "Total\nPessoas", color: "text-accent" },
-                { icon: UserRound, val: stats.totalAdults,   label: "Adultos",        color: "text-blue-300" },
-                { icon: Baby,      val: stats.totalChildren, label: "Crianças",       color: "text-pink-300" },
+                { icon: Users,     val: stats.totalPeople,   label: "Total\nPessoas", color: "party-text-accent" },
+                { icon: UserRound, val: stats.totalAdults,   label: "Adultos",        color: "party-text-secondary" },
+                { icon: Baby,      val: stats.totalChildren, label: "Crianças",       color: "party-text-accent" },
               ].map(({ icon: Icon, val, label, color }) => (
-                <div key={label} className="bg-primary/90 px-3 py-4 text-center flex flex-col items-center gap-1">
+                <div key={label} className="party-bg-primary-90 px-3 py-4 text-center flex flex-col items-center gap-1">
                   <Icon className={`w-5 h-5 ${color}`} />
                   <span className="font-display text-3xl text-white leading-none">{val}</span>
                   <span className="text-white/80 text-xs font-bold leading-tight whitespace-pre-line">{label}</span>
@@ -760,8 +783,8 @@ function GuestListSection() {
             const initial = (guest.childName || guest.parentName).charAt(0).toUpperCase();
             return (
               <motion.div key={guest.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                className="bg-card border-2 border-secondary/20 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:border-secondary/50 transition-colors">
-                <div className="w-11 h-11 rounded-lg bg-primary flex items-center justify-center shrink-0 border-2 border-primary/60"
+                className="bg-card border-2 party-border-secondary-soft rounded-xl p-4 flex items-center gap-3 shadow-sm transition-colors">
+                <div className="w-11 h-11 rounded-lg party-bg-primary flex items-center justify-center shrink-0 border-2 party-border-primary-soft"
                   style={{ boxShadow: "inset 0 2px 0 rgba(255,255,255,0.2), 0 2px 0 rgba(0,0,0,0.3)" }}>
                   <span className="font-display text-white text-xl leading-none">{initial}</span>
                 </div>
@@ -770,9 +793,9 @@ function GuestListSection() {
                     ? (<><p className="font-bold text-foreground truncate text-sm">{guest.childName}</p><p className="text-xs text-muted-foreground truncate">com {guest.parentName}</p></>)
                     : <p className="font-bold text-foreground truncate text-sm">{guest.parentName}</p>}
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    <span className="mc-badge bg-blue-50 border-blue-200 text-blue-700"><UserRound className="w-3 h-3" /> {guest.adultsCount}</span>
-                    {guest.childrenCount > 0 && <span className="mc-badge bg-pink-50 border-pink-200 text-pink-600"><Baby className="w-3 h-3" /> {guest.childrenCount}</span>}
-                    <span className="mc-badge bg-green-50 border-green-200 text-green-700"><CheckCircle2 className="w-3 h-3" /> Confirmado</span>
+                    <span className="mc-badge party-bg-primary-soft party-border-primary-soft party-text-primary"><UserRound className="w-3 h-3" /> {guest.adultsCount}</span>
+                    {guest.childrenCount > 0 && <span className="mc-badge party-bg-secondary-soft party-border-secondary-soft party-text-secondary"><Baby className="w-3 h-3" /> {guest.childrenCount}</span>}
+                    <span className="mc-badge party-bg-accent-soft party-border-accent-soft text-foreground"><CheckCircle2 className="w-3 h-3" /> Confirmado</span>
                   </div>
                 </div>
               </motion.div>
@@ -802,7 +825,7 @@ function MapsSection({ event }: { event: typeof DEFAULT_EVENT }) {
     <section className="bg-background py-8 px-4">
       <div className="max-w-lg mx-auto">
         <div className="mb-4">
-          <div className="inline-block bg-primary px-6 py-2 rounded-xl">
+          <div className="inline-block party-bg-primary px-6 py-2 rounded-xl">
             <h2 className="font-display text-xl sm:text-2xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">📍 Como Chegar</h2>
           </div>
         </div>
@@ -814,7 +837,7 @@ function MapsSection({ event }: { event: typeof DEFAULT_EVENT }) {
           </div>
           <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-start gap-2">
-              <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <MapPin className="w-4 h-4 party-text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-sm text-foreground">{event.location}</p>
                 <p className="text-xs text-muted-foreground">{event.neighborhood}</p>
@@ -822,7 +845,7 @@ function MapsSection({ event }: { event: typeof DEFAULT_EVENT }) {
             </div>
             <div className="flex gap-2 shrink-0">
               <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 bg-primary text-white font-bold px-3 py-2 rounded-xl text-xs hover:bg-primary/90 transition-colors">
+                className="inline-flex items-center gap-1.5 party-bg-primary party-hover-primary text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors">
                 <MapPin className="w-3.5 h-3.5" /> Google Maps
               </a>
               <a href={wazeUrl} target="_blank" rel="noopener noreferrer"
@@ -839,22 +862,30 @@ function MapsSection({ event }: { event: typeof DEFAULT_EVENT }) {
 }
 
 function SpotifySection({ event }: { event: typeof DEFAULT_EVENT }) {
-  const url = event.spotifyPlaylistUrl;
+  const url = event.spotifyPlaylistUrl || DEFAULT_EVENT.spotifyPlaylistUrl;
   if (!url) return null;
   const embedUrl = url
     .replace("open.spotify.com/", "open.spotify.com/embed/")
     .split("?")[0];
+
   return (
     <section className="bg-background py-6 px-4">
       <div className="max-w-lg mx-auto">
         <div className="mb-4">
-          <div className="inline-block bg-primary px-6 py-2 rounded-xl">
-            <h2 className="font-display text-xl sm:text-2xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">🎵 Playlist da Festa</h2>
+          <div className="inline-block party-bg-primary px-6 py-2 rounded-xl">
+            <h2 className="font-display text-xl sm:text-2xl text-white drop-shadow-[1px_1px_0_rgba(0,0,0,0.4)]">Playlist da Festa</h2>
           </div>
         </div>
-        <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy" className="rounded-2xl shadow-md" title="Playlist da festa" />
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          className="rounded-2xl shadow-md"
+          title="Playlist da festa"
+        />
       </div>
     </section>
   );

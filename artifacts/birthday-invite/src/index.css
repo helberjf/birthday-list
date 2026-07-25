@@ -5,54 +5,58 @@
   --font-display: 'Chewy', system-ui, sans-serif;
   --font-sans: 'Nunito', system-ui, sans-serif;
 
-  /* Minecraft palette */
-  --color-background: hsl(40 35% 92%);       /* sandy parchment */
-  --color-foreground: hsl(130 60% 12%);       /* deep minecraft dark green */
+  --color-background: hsl(330 70% 96%);
+  --color-foreground: hsl(323 62% 18%);
 
-  --color-primary: hsl(130 55% 28%);          /* minecraft dark green */
+  --color-primary: hsl(323 72% 34%);
   --color-primary-foreground: hsl(0 0% 100%);
 
-  --color-secondary: hsl(122 45% 42%);        /* grass green */
+  --color-secondary: hsl(333 78% 56%);
   --color-secondary-foreground: hsl(0 0% 100%);
 
-  --color-accent: hsl(42 95% 52%);            /* minecraft gold */
-  --color-accent-foreground: hsl(130 60% 12%);
+  --color-accent: hsl(48 95% 62%);
+  --color-accent-foreground: hsl(323 62% 18%);
 
   --color-destructive: hsl(0 72% 51%);
   --color-destructive-foreground: hsl(0 0% 100%);
 
-  --color-muted: hsl(40 25% 84%);
-  --color-muted-foreground: hsl(130 20% 40%);
+  --color-muted: hsl(331 55% 91%);
+  --color-muted-foreground: hsl(323 28% 39%);
 
   --color-card: hsl(42 50% 97%);
-  --color-card-foreground: hsl(130 60% 12%);
-  --color-border: hsl(40 25% 78%);
-  --color-input: hsl(40 25% 88%);
-  --color-ring: hsl(122 45% 42%);
+  --color-card-foreground: hsl(323 62% 18%);
+  --color-border: hsl(332 52% 84%);
+  --color-input: hsl(330 55% 94%);
+  --color-ring: hsl(333 78% 56%);
 }
 
 :root {
   --radius: 0.75rem;
+  --party-hero-from: #4b1238;
+  --party-hero-via: #b91d73;
+  --party-hero-to: #f7a8cd;
 }
 
 @layer base {
   * { @apply border-border; }
   body {
     @apply bg-background text-foreground antialiased font-sans;
+    color: var(--color-foreground);
+    background-color: var(--color-background);
     background-image:
       repeating-linear-gradient(
         0deg,
         transparent,
         transparent 31px,
-        rgba(0,0,0,0.03) 31px,
-        rgba(0,0,0,0.03) 32px
+        color-mix(in srgb, var(--color-border) 50%, transparent) 31px,
+        color-mix(in srgb, var(--color-border) 50%, transparent) 32px
       ),
       repeating-linear-gradient(
         90deg,
         transparent,
         transparent 31px,
-        rgba(0,0,0,0.03) 31px,
-        rgba(0,0,0,0.03) 32px
+        color-mix(in srgb, var(--color-border) 50%, transparent) 31px,
+        color-mix(in srgb, var(--color-border) 50%, transparent) 32px
       );
   }
 
@@ -61,14 +65,20 @@
   }
 }
 
-/* Minecraft pixel border animation */
 @keyframes borderGlow {
-  0%, 100% { box-shadow: 0 0 8px 2px rgba(74,222,128,0.4), inset 0 0 8px rgba(74,222,128,0.1); }
-  50%       { box-shadow: 0 0 18px 5px rgba(74,222,128,0.7), inset 0 0 12px rgba(74,222,128,0.2); }
+  0%, 100% {
+    box-shadow:
+      0 0 8px 2px color-mix(in srgb, var(--color-secondary) 45%, transparent),
+      inset 0 0 8px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 18px 5px color-mix(in srgb, var(--color-secondary) 70%, transparent),
+      inset 0 0 12px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+  }
 }
 .glow-border { animation: borderGlow 2.5s ease-in-out infinite; }
 
-/* Pixel-style block button */
 @layer utilities {
   .btn-mc {
     @apply relative font-display tracking-wider transition-all duration-150 active:scale-95 select-none;
@@ -85,9 +95,58 @@
     transform: translateY(3px) scale(0.98);
   }
 
-  /* pixel-style badge */
   .mc-badge {
     @apply inline-flex items-center gap-1 font-bold text-xs px-2 py-0.5 rounded border;
     image-rendering: pixelated;
   }
+
+  .party-bg-primary { background-color: var(--color-primary); }
+  .party-bg-primary-90 { background-color: color-mix(in srgb, var(--color-primary) 90%, transparent); }
+  .party-bg-primary-soft { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+  .party-bg-secondary { background-color: var(--color-secondary); }
+  .party-bg-secondary-soft { background-color: color-mix(in srgb, var(--color-secondary) 18%, transparent); }
+  .party-bg-accent { background-color: var(--color-accent); }
+  .party-bg-accent-soft { background-color: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+  .party-text-primary { color: var(--color-primary); }
+  .party-text-secondary { color: var(--color-secondary); }
+  .party-text-accent { color: var(--color-accent); }
+  .party-border-primary { border-color: var(--color-primary); }
+  .party-border-primary-soft { border-color: color-mix(in srgb, var(--color-primary) 35%, transparent); }
+  .party-border-secondary-soft { border-color: color-mix(in srgb, var(--color-secondary) 35%, transparent); }
+  .party-border-accent-soft { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); }
+  .party-hover-primary:hover { background-color: color-mix(in srgb, var(--color-primary) 90%, black); }
+  .party-hover-secondary:hover { background-color: color-mix(in srgb, var(--color-secondary) 90%, black); }
+  .party-gradient-strong { background: linear-gradient(to bottom, var(--color-primary), var(--color-secondary)); }
+  .party-gradient-soft { background: linear-gradient(to bottom, var(--color-muted), var(--color-background)); }
+  .party-gradient-soft-reverse { background: linear-gradient(to bottom, var(--color-background), var(--color-muted)); }
+
+  .bg-background { background-color: var(--color-background) !important; }
+  .bg-card { background-color: var(--color-card) !important; }
+  .bg-primary { background-color: var(--color-primary) !important; }
+  .bg-secondary { background-color: var(--color-secondary) !important; }
+  .bg-accent { background-color: var(--color-accent) !important; }
+  .bg-muted { background-color: var(--color-muted) !important; }
+  .bg-primary\/10 { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent) !important; }
+  .bg-primary\/90 { background-color: color-mix(in srgb, var(--color-primary) 90%, transparent) !important; }
+  .bg-secondary\/10 { background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent) !important; }
+  .bg-secondary\/20 { background-color: color-mix(in srgb, var(--color-secondary) 20%, transparent) !important; }
+  .bg-accent\/20 { background-color: color-mix(in srgb, var(--color-accent) 20%, transparent) !important; }
+  .text-foreground { color: var(--color-foreground) !important; }
+  .text-primary { color: var(--color-primary) !important; }
+  .text-secondary { color: var(--color-secondary) !important; }
+  .text-accent { color: var(--color-accent) !important; }
+  .text-muted-foreground { color: var(--color-muted-foreground) !important; }
+  .border-border { border-color: var(--color-border) !important; }
+  .border-input { border-color: var(--color-input) !important; }
+  .border-primary { border-color: var(--color-primary) !important; }
+  .border-secondary { border-color: var(--color-secondary) !important; }
+  .border-accent { border-color: var(--color-accent) !important; }
+  .border-primary\/20 { border-color: color-mix(in srgb, var(--color-primary) 20%, transparent) !important; }
+  .border-primary\/60 { border-color: color-mix(in srgb, var(--color-primary) 60%, transparent) !important; }
+  .border-secondary\/20 { border-color: color-mix(in srgb, var(--color-secondary) 20%, transparent) !important; }
+  .border-secondary\/30 { border-color: color-mix(in srgb, var(--color-secondary) 30%, transparent) !important; }
+  .border-accent\/30 { border-color: color-mix(in srgb, var(--color-accent) 30%, transparent) !important; }
+  .hover\:bg-primary\/90:hover { background-color: color-mix(in srgb, var(--color-primary) 90%, black) !important; }
+  .hover\:bg-primary\/80:hover { background-color: color-mix(in srgb, var(--color-primary) 80%, black) !important; }
+  .hover\:border-secondary\/50:hover { border-color: color-mix(in srgb, var(--color-secondary) 50%, transparent) !important; }
 }

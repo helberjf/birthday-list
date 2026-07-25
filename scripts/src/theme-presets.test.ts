@@ -4,6 +4,7 @@ import { DEFAULT_THEMES } from "../../lib/db/src/theme-presets";
 
 const slugs = new Set(DEFAULT_THEMES.map((theme) => theme.slug));
 const newThemeSlugs = [
+  "emily-vik",
   "bluey",
   "patrulha-canina",
   "barbie",
