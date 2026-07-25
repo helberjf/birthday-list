@@ -58,7 +58,7 @@ function normalizeSlug(slug: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-const DEFAULT_EVENT_CONFIG: EventConfig = {
+const DEFAULT_EVENT_CONFIG = {
   id: 1,
   childName: "Julia",
   age: "5",
@@ -83,7 +83,7 @@ const DEFAULT_EVENT_CONFIG: EventConfig = {
   whatsappReminderMessage:
     "Ola, {nome}!\n\nLembrando que o aniversario da {aniversariante} e no dia {data} as {horario}.\n\nLocal: {local} - {bairro}\n\nEsperamos voce!",
   updatedAt: new Date(),
-};
+} as EventConfig;
 
 function defaultState(): TursoState {
   const now = new Date();
