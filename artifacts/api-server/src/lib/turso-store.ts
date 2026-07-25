@@ -80,6 +80,8 @@ const DEFAULT_EVENT_CONFIG: EventConfig = {
   mapsUrl: "https://maps.app.goo.gl/yjUt5rZNPGpfYyfa7?g_st=iw",
   whatsappReminderEnabled: false,
   whatsappReminderDaysBefore: "3",
+  whatsappReminderMessage:
+    "Ola, {nome}!\n\nLembrando que o aniversario da {aniversariante} e no dia {data} as {horario}.\n\nLocal: {local} - {bairro}\n\nEsperamos voce!",
   updatedAt: new Date(),
 };
 
@@ -212,7 +214,6 @@ export class TursoStore {
   }
 
   private async ensureLoaded(): Promise<TursoState> {
-    if (this.state) return this.state;
     const client = await this.ensureClient();
 
     if (!this.initialized) {
@@ -395,7 +396,7 @@ export class TursoStore {
     previousData: Record<string, unknown> | null,
     newData: Record<string, unknown> | null,
   ): Promise<GuestAudit> {
-    const state = await this.ensureLoaded();
+    const state = this.state ?? await this.ensureLoaded();
     const entry: GuestAudit = {
       id: state.nextAuditId++,
       guestId,

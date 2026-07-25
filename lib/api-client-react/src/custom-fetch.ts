@@ -10,6 +10,14 @@ export type AuthTokenGetter = () => Promise<string | null> | string | null;
 
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
+const TOP_LEVEL_HEADER_KEYS = [
+  "Authorization",
+  "authorization",
+  "Content-Type",
+  "content-type",
+  "Accept",
+  "accept",
+] as const;
 
 // ---------------------------------------------------------------------------
 // Module-level configuration
@@ -86,6 +94,20 @@ function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
   }
 
   return headers;
+}
+
+function getTopLevelHeaders(options: CustomFetchOptions): HeadersInit | undefined {
+  const headers: Record<string, string> = {};
+  const source = options as CustomFetchOptions & Record<string, unknown>;
+
+  for (const key of TOP_LEVEL_HEADER_KEYS) {
+    const value = source[key];
+    if (typeof value === "string") {
+      headers[key] = value;
+    }
+  }
+
+  return Object.keys(headers).length > 0 ? headers : undefined;
 }
 
 function getMediaType(headers: Headers): string | null {
@@ -324,6 +346,7 @@ export async function customFetch<T = unknown>(
   options: CustomFetchOptions = {},
 ): Promise<T> {
   input = applyBaseUrl(input);
+  const topLevelHeaders = getTopLevelHeaders(options);
   const { responseType = "auto", headers: headersInit, ...init } = options;
 
   const method = resolveMethod(input, init.method);
@@ -332,7 +355,7 @@ export async function customFetch<T = unknown>(
     throw new TypeError(`customFetch: ${method} requests cannot have a body.`);
   }
 
-  const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
+  const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, topLevelHeaders, headersInit);
 
   if (
     typeof init.body === "string" &&
