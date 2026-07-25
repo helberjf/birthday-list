@@ -1,4 +1,4 @@
-import type { Client } from "@libsql/client";
+import type { Client } from "@libsql/client/http";
 import { DEFAULT_THEMES } from "@workspace/db/theme-presets";
 import type { EventConfig, Guest, GuestAudit, GuestStatus, Photo, Theme } from "./firebase-store";
 
@@ -201,7 +201,7 @@ export class TursoStore {
     if (!this.clientPromise) {
       this.clientPromise = (async () => {
         const config = getTursoConfig();
-        const { createClient } = await import("@libsql/client");
+        const { createClient } = await import("@libsql/client/http");
         const client = createClient({ url: config.url, authToken: config.authToken });
         this.client = client;
         return client;
