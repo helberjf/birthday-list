@@ -3,14 +3,31 @@ import { dataStore, getDatabaseProvider } from "../lib/data-store";
 
 const router: IRouter = Router();
 
+function getDatabaseProtocol(databaseUrl: string) {
+  if (!databaseUrl) return null;
+  try {
+    return new URL(databaseUrl).protocol;
+  } catch {
+    return "invalid";
+  }
+}
+
+function getProvider() {
+  try {
+    return getDatabaseProvider();
+  } catch (error) {
+    return error instanceof Error ? `error:${error.message}` : "error";
+  }
+}
+
 router.get("/diagnostics/store", async (_req, res) => {
   const databaseUrl = process.env["DATABASE_URL"] ?? "";
   try {
     const config = await dataStore.getOrCreateEventConfig();
     res.json({
       ok: true,
-      provider: getDatabaseProvider(),
-      databaseProtocol: databaseUrl ? new URL(databaseUrl).protocol : null,
+      provider: getProvider(),
+      databaseProtocol: getDatabaseProtocol(databaseUrl),
       hasAuthToken: Boolean(
         process.env["DATABASE_AUTH_TOKEN"] ||
           process.env["TURSO_AUTH_TOKEN"] ||
@@ -22,8 +39,8 @@ router.get("/diagnostics/store", async (_req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      provider: getDatabaseProvider(),
-      databaseProtocol: databaseUrl ? new URL(databaseUrl).protocol : null,
+      provider: getProvider(),
+      databaseProtocol: getDatabaseProtocol(databaseUrl),
       hasAuthToken: Boolean(
         process.env["DATABASE_AUTH_TOKEN"] ||
           process.env["TURSO_AUTH_TOKEN"] ||
