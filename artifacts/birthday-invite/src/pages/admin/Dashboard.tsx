@@ -103,13 +103,19 @@ function useAdminAuthExpiry(error: unknown, logout: () => void) {
     if (isUnauthorizedError(error)) logout();
   }, [error, logout]);
 }
+
+function formatDateSafe(value: unknown, pattern: string, fallback = "—") {
+  const date = new Date(value as string | number | Date);
+  return Number.isNaN(date.getTime()) ? fallback : format(date, pattern);
+}
+
 /* ── Export helpers ─────────────────────────────────── */
 function guestRow(g: Guest) {
   return {
     "Responsável": g.parentName, "Criança": g.childName || "—",
     "WhatsApp": g.phone || "—", "Adultos": g.adultsCount, "Crianças": g.childrenCount,
     "Total": g.adultsCount + g.childrenCount, "Status": STATUS_LABEL[g.status] ?? g.status,
-    "Obs. Público": g.notes || "—", "Data RSVP": format(new Date(g.createdAt), "dd/MM/yyyy HH:mm"),
+    "Obs. Público": g.notes || "—", "Data RSVP": formatDateSafe(g.createdAt, "dd/MM/yyyy HH:mm"),
   };
 }
 async function fetchAllGuests(authHeaders: Record<string, string>) {
@@ -134,7 +140,7 @@ function exportPDF(guests: Guest[]) {
   autoTable(doc, {
     startY: 28,
     head: [["Responsável","Criança","WhatsApp","Ad.","Cr.","Total","Status","Data"]],
-    body: guests.map(g => [g.parentName, g.childName||"—", g.phone||"—", g.adultsCount, g.childrenCount, g.adultsCount+g.childrenCount, STATUS_LABEL[g.status]||g.status, format(new Date(g.createdAt),"dd/MM/yyyy")]),
+    body: guests.map(g => [g.parentName, g.childName||"—", g.phone||"—", g.adultsCount, g.childrenCount, g.adultsCount+g.childrenCount, STATUS_LABEL[g.status]||g.status, formatDateSafe(g.createdAt,"dd/MM/yyyy")]),
     styles: { fontSize: 8, cellPadding: 3 },
     headStyles: { fillColor: [45, 138, 64], textColor: 255, fontStyle: "bold" },
     alternateRowStyles: { fillColor: [240, 249, 240] },
@@ -327,7 +333,7 @@ function GuestManager({ authHeaders, logout }: { authHeaders: Record<string, str
                 <div className="flex items-center gap-2 mt-2">
                   <span className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full"><UserRound className="w-3 h-3" /> {guest.adultsCount}</span>
                   <span className="inline-flex items-center gap-1 text-xs bg-pink-50 text-pink-600 font-bold px-2 py-0.5 rounded-full"><Baby className="w-3 h-3" /> {guest.childrenCount}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">{format(new Date(guest.createdAt), "dd/MM HH:mm")}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{formatDateSafe(guest.createdAt, "dd/MM HH:mm")}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1 shrink-0">
@@ -361,7 +367,7 @@ function GuestManager({ authHeaders, logout }: { authHeaders: Record<string, str
               : data?.items.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">Nenhuma resposta encontrada.</td></tr>
               : data?.items.map(guest => (
                 <tr key={guest.id} className="hover:bg-muted/5 transition-colors">
-                  <td className="p-4 pl-6 text-xs text-muted-foreground whitespace-nowrap">{format(new Date(guest.createdAt), "dd/MM 'às' HH:mm")}</td>
+                  <td className="p-4 pl-6 text-xs text-muted-foreground whitespace-nowrap">{formatDateSafe(guest.createdAt, "dd/MM 'às' HH:mm")}</td>
                   <td className="p-4">
                     <p className="text-sm font-medium">{guest.parentName}</p>
                     {guest.childName && <p className="text-xs text-muted-foreground italic">Criança: {guest.childName}</p>}
@@ -809,7 +815,7 @@ function AuditLog({ authHeaders }: { authHeaders: Record<string, string> }) {
                           <span className="text-xs text-muted-foreground font-mono">({entry.action.split(":")[1]})</span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(entry.createdAt), "dd/MM/yyyy 'às' HH:mm:ss")}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatDateSafe(entry.createdAt, "dd/MM/yyyy 'às' HH:mm:ss")}</p>
                     </div>
                     {(entry.previousData != null || entry.newData != null) && (
                       <button onClick={() => setExpanded(expanded === entry.id ? null : entry.id)}
