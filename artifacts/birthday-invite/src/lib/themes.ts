@@ -69,6 +69,18 @@ export function getThemeCssVars(theme: ThemeView) {
     "--color-primary": theme.cssPrimary,
     "--color-secondary": theme.cssSecondary,
     "--color-accent": theme.cssAccent,
+    "--color-background": `color-mix(in srgb, ${theme.cssAccent} 10%, white)`,
+    "--color-foreground": `color-mix(in srgb, ${theme.cssPrimary} 70%, black)`,
+    "--color-muted": `color-mix(in srgb, ${theme.cssSecondary} 12%, white)`,
+    "--color-muted-foreground": `color-mix(in srgb, ${theme.cssPrimary} 55%, #64748b)`,
+    "--color-card": `color-mix(in srgb, ${theme.cssAccent} 5%, white)`,
+    "--color-card-foreground": `color-mix(in srgb, ${theme.cssPrimary} 70%, black)`,
+    "--color-border": `color-mix(in srgb, ${theme.cssPrimary} 18%, white)`,
+    "--color-input": `color-mix(in srgb, ${theme.cssSecondary} 10%, white)`,
+    "--color-ring": theme.cssSecondary,
+    "--party-hero-from": theme.heroBgFrom,
+    "--party-hero-via": theme.heroBgVia,
+    "--party-hero-to": theme.heroBgTo,
   };
 }
 
