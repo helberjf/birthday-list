@@ -4,7 +4,8 @@ import { resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 const vercelConfig = JSON.parse(readFileSync(resolve(repoRoot, "vercel.json"), "utf8")) as {
-  rewrites?: Array<{ source: string; destination: string }>;
+  rewrites?: unknown;
+  routes?: Array<{ src?: string; dest?: string; handle?: string }>;
 };
 const appSource = readFileSync(resolve(repoRoot, "artifacts/api-server/src/app.ts"), "utf8");
 const routeSource = readFileSync(resolve(repoRoot, "artifacts/api-server/src/routes/social-preview.ts"), "utf8");
@@ -14,11 +15,22 @@ const packageJson = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "
   scripts?: Record<string, string>;
 };
 
-const rootRewrite = vercelConfig.rewrites?.find((rewrite) => rewrite.source === "/");
+assert.equal(vercelConfig.rewrites, undefined, "Root social preview routing must use routes, not rewrites.");
+
+const rootRewrite = vercelConfig.routes?.[0];
 assert.equal(
-  rootRewrite?.destination,
+  rootRewrite?.src,
+  "^/$",
+  "The root route must run before the filesystem can serve the static index.html.",
+);
+assert.equal(
+  rootRewrite?.dest,
   "/api/page",
   "Root requests must reach the API so WhatsApp sees fresh event metadata.",
+);
+assert.ok(
+  vercelConfig.routes?.some((route) => route.handle === "filesystem"),
+  "Static assets must still be served by Vercel's filesystem routing after dynamic routes.",
 );
 
 assert.match(
