@@ -8,6 +8,7 @@ import router from "./routes";
 import { FirebaseNotConfiguredError } from "./lib/firebase-store";
 import { logger } from "./lib/logger";
 import { TursoNotConfiguredError } from "./lib/turso-store";
+import { socialPreviewHandler } from "./routes/social-preview";
 
 const app: Express = express();
 
@@ -48,6 +49,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.get(["/", "/api/page"], socialPreviewHandler);
 app.use("/api", router);
 
 const publicDir = path.resolve(process.cwd(), "artifacts", "birthday-invite", "dist", "public");
