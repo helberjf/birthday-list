@@ -57,3 +57,8 @@ Thumbs.db
 
 # Local uploads are not durable in Vercel functions
 uploads/
+
+# Local AI assistant files
+.claude/
+.openclaw/
+docs/superpowers/
