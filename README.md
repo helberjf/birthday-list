@@ -1,7 +1,5 @@
 # Birthday List — Digital Invitations and RSVP
 
-[![CI](https://github.com/helberjf/birthday-list/actions/workflows/ci.yml/badge.svg)](https://github.com/helberjf/birthday-list/actions/workflows/ci.yml)
-
 A customizable party invitation application with RSVP, themes, photos and an administrative workspace. Guests open the invitation and respond; the organizer manages event content, attendance and follow-up information.
 
 [API contract](lib/api-spec/openapi.yaml) · [Backend](artifacts/api-server/src) · [Frontend](artifacts/birthday-invite)
