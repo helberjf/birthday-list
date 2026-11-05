@@ -4,7 +4,7 @@
 
 A customizable party invitation application with RSVP, themes, photos and an administrative workspace. Guests open the invitation and respond; the organizer manages event content, attendance and follow-up information.
 
-**[Live demo](https://birthday-list-eta.vercel.app)** · [API contract](lib/api-spec/openapi.yaml) · [Backend](artifacts/api-server/src) · [Frontend](artifacts/birthday-invite)
+[API contract](lib/api-spec/openapi.yaml) · [Backend](artifacts/api-server/src) · [Frontend](artifacts/birthday-invite)
 
 ## Architecture
 
